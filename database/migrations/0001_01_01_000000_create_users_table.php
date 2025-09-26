@@ -21,10 +21,12 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->foreignId('prodi_id')
+                ->nullable()
                 ->constrained('prodi')
                 ->onDelete('cascade');
             $table->string('npm', 20)->nullable()->unique();
             $table->string('nidn', 20)->nullable()->unique();
+            $table->string('email', 50)->nullable()->unique();
             $table->string('nama', 100);
             $table->string('password');
             $table->enum('role', ['admin', 'kaprodi', 'dekan', 'dosen', 'mahasiswa']);
