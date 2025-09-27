@@ -9,10 +9,18 @@ Route::get('/dashboard', function () { return view('dashboard'); })->name('dashb
 Route::prefix('data')->middleware('auth')->group(function () {
     Route::prefix('dosen')->group(function () {
         Route::get('/', [App\Http\Controllers\DosenController::class, 'index'])->name('data.dosen');
-        Route::get('/create', [App\Http\Controllers\DosenController::class, 'create'])->name('data.dosen.create');
-        Route::post('/store', [App\Http\Controllers\DosenController::class, 'store'])->name('data.dosen.store');
+        Route::get('/tambah', [App\Http\Controllers\DosenController::class, 'create'])->name('data.dosen.create');
+        Route::post('/simpan', [App\Http\Controllers\DosenController::class, 'store'])->name('data.dosen.store');
         Route::get('/{id}/edit', [App\Http\Controllers\DosenController::class, 'edit'])->name('data.dosen.edit');
         Route::put('/{id}/update', [App\Http\Controllers\DosenController::class, 'update'])->name('data.dosen.update');
-        Route::delete('/{id}/delete', [App\Http\Controllers\DosenController::class, 'destroy'])->name('data.dosen.delete');
+        Route::delete('/{id}/hapus', [App\Http\Controllers\DosenController::class, 'destroy'])->name('data.dosen.delete');
+    });
+    Route::prefix('prodi')->group(function () {
+        Route::get('/', [App\Http\Controllers\ProdiController::class, 'index'])->name('data.prodi');
+        Route::get('/tambah', [App\Http\Controllers\ProdiController::class, 'create'])->name('data.prodi.create');
+        Route::post('/simpan', [App\Http\Controllers\ProdiController::class, 'store'])->name('data.prodi.store');
+        Route::get('/{id}/edit', [App\Http\Controllers\ProdiController::class, 'edit'])->name('data.prodi.edit');
+        Route::put('/{id}/update', [App\Http\Controllers\ProdiController::class, 'update'])->name('data.prodi.update');
+        Route::delete('/{id}/hapus', [App\Http\Controllers\ProdiController::class, 'destroy'])->name('data.prodi.delete');
     });
 })->name('data.');

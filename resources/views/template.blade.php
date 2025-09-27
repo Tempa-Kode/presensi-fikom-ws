@@ -81,6 +81,11 @@
                                         class="nav-link {{ Route::currentRouteName() == "data.dosen" ? "text-primary" : "" }}"><i
                                             class="fe fe-box"></i> Data Dosen</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ route("data.prodi" )}}"
+                                        class="nav-link {{ Route::currentRouteName() == "data.prodi" ? "text-primary" : "" }}"><i
+                                            class="fe fe-box"></i> Data Prodi</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
