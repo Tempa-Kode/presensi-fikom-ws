@@ -27,10 +27,50 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.3/css/responsive.dataTables.min.css" />
+
+    <style>
+        /* Reset body dan html */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sticky Footer Styles dengan prioritas tinggi */
+        .page.sticky-footer {
+            display: flex !important;
+            flex-direction: column !important;
+            min-height: 100vh !important;
+        }
+
+        .page.sticky-footer .page-main {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .page.sticky-footer footer.footer {
+            margin-top: auto !important;
+            flex-shrink: 0 !important;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            padding: 1rem 0;
+        }
+
+        /* Override dashboard.css jika perlu */
+        .page {
+            position: relative !important;
+        }
+
+        /* Pastikan konten utama mengisi ruang */
+        .my-3.my-md-5 {
+            flex: 1;
+        }
+    </style>
 </head>
 
 <body class="">
-    <div class="page">
+    <div class="page sticky-footer">
         <div class="page-main">
             <div class="header py-4">
                 <div class="container">
@@ -86,6 +126,11 @@
                                         class="nav-link {{ Route::currentRouteName() == "data.prodi" ? "text-primary" : "" }}"><i
                                             class="fe fe-box"></i> Data Prodi</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ route("data.tahun_akademik" )}}"
+                                        class="nav-link {{ Route::currentRouteName() == "data.tahun_akademik" ? "text-primary" : "" }}"><i
+                                            class="fe fe-box"></i> Data TA</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -121,8 +166,15 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
+            // Debug info
+            console.log('=== Library Check ===');
+            console.log('jQuery version:', typeof jQuery !== 'undefined' ? jQuery.fn.jquery : 'Not loaded');
+            console.log('DataTables available:', typeof $.fn.DataTable !== 'undefined' ? 'Yes' : 'No');
+            console.log('Elements with class datatable:', $('.datatable').length);
+
             // Pastikan jQuery dan DataTables tersedia
             if (typeof jQuery !== 'undefined' && typeof $.fn.DataTable !== 'undefined') {
+                // Initialize DataTables untuk semua tabel dengan class datatable
                 $('.datatable').each(function(index) {
                     var tableId = $(this).attr('id') || 'table-' + index;
                     console.log('Initializing DataTable for:', tableId);
