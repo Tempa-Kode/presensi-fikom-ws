@@ -23,4 +23,12 @@ Route::prefix('data')->middleware('auth')->group(function () {
         Route::put('/{id}/update', [App\Http\Controllers\ProdiController::class, 'update'])->name('data.prodi.update');
         Route::delete('/{id}/hapus', [App\Http\Controllers\ProdiController::class, 'destroy'])->name('data.prodi.delete');
     });
+    Route::prefix('tahun_akademik')->group(function () {
+        Route::get('/', [App\Http\Controllers\TahunAkademikController::class, 'index'])->name('data.tahun_akademik');
+        Route::get('/tambah', [App\Http\Controllers\TahunAkademikController::class, 'create'])->name('data.tahun_akademik.create');
+        Route::post('/simpan', [App\Http\Controllers\TahunAkademikController::class, 'store'])->name('data.tahun_akademik.store');
+        Route::get('/{id}/edit', [App\Http\Controllers\TahunAkademikController::class, 'edit'])->name('data.tahun_akademik.edit');
+        Route::put('/{id}/update', [App\Http\Controllers\TahunAkademikController::class, 'update'])->name('data.tahun_akademik.update');
+        Route::delete('/{id}/hapus', [App\Http\Controllers\TahunAkademikController::class, 'destroy'])->name('data.tahun_akademik.delete');
+    });
 })->name('data.');
