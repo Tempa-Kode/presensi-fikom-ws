@@ -31,4 +31,12 @@ Route::prefix('data')->middleware('auth')->group(function () {
         Route::put('/{id}/update', [App\Http\Controllers\TahunAkademikController::class, 'update'])->name('data.tahun_akademik.update');
         Route::delete('/{id}/hapus', [App\Http\Controllers\TahunAkademikController::class, 'destroy'])->name('data.tahun_akademik.delete');
     });
+    Route::prefix('matakuliah')->group(function () {
+        Route::get('/', [App\Http\Controllers\MatakuliahController::class, 'index'])->name('data.matakuliah');
+        Route::get('/tambah', [App\Http\Controllers\MatakuliahController::class, 'create'])->name('data.matakuliah.create');
+        Route::post('/simpan', [App\Http\Controllers\MatakuliahController::class, 'store'])->name('data.matakuliah.store');
+        Route::get('/{id}/edit', [App\Http\Controllers\MatakuliahController::class, 'edit'])->name('data.matakuliah.edit');
+        Route::put('/{id}/update', [App\Http\Controllers\MatakuliahController::class, 'update'])->name('data.matakuliah.update');
+        Route::delete('/{id}/hapus', [App\Http\Controllers\MatakuliahController::class, 'destroy'])->name('data.matakuliah.delete');
+    });
 })->name('data.');

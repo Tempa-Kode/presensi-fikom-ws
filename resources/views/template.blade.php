@@ -131,6 +131,11 @@
                                         class="nav-link {{ Route::currentRouteName() == "data.tahun_akademik" ? "text-primary" : "" }}"><i
                                             class="fe fe-box"></i> Data TA</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ route("data.matakuliah" )}}"
+                                        class="nav-link {{ Route::currentRouteName() == "data.matakuliah" ? "text-primary" : "" }}"><i
+                                            class="fe fe-box"></i> Data Matakuliah</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
