@@ -47,4 +47,12 @@ Route::prefix('data')->middleware('auth')->group(function () {
         Route::put('/{id}/update', [App\Http\Controllers\RuanganController::class, 'update'])->name('data.ruangan.update');
         Route::delete('/{id}/hapus', [App\Http\Controllers\RuanganController::class, 'destroy'])->name('data.ruangan.delete');
     });
+    Route::prefix('jam')->group(function () {
+        Route::get('/', [App\Http\Controllers\JamController::class, 'index'])->name('data.jam');
+        Route::get('/tambah', [App\Http\Controllers\JamController::class, 'create'])->name('data.jam.create');
+        Route::post('/simpan', [App\Http\Controllers\JamController::class, 'store'])->name('data.jam.store');
+        Route::get('/{id}/edit', [App\Http\Controllers\JamController::class, 'edit'])->name('data.jam.edit');
+        Route::put('/{id}/update', [App\Http\Controllers\JamController::class, 'update'])->name('data.jam.update');
+        Route::delete('/{id}/hapus', [App\Http\Controllers\JamController::class, 'destroy'])->name('data.jam.delete');
+    });
 })->name('data.');

@@ -141,6 +141,11 @@
                                         class="nav-link {{ Route::currentRouteName() == "data.ruangan" ? "text-primary" : "" }}"><i
                                             class="fe fe-box"></i> Data Ruangan</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ route("data.jam" )}}"
+                                        class="nav-link {{ Route::currentRouteName() == "data.jam" ? "text-primary" : "" }}"><i
+                                            class="fe fe-box"></i> Data Jam</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
