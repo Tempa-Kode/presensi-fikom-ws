@@ -39,4 +39,12 @@ Route::prefix('data')->middleware('auth')->group(function () {
         Route::put('/{id}/update', [App\Http\Controllers\MatakuliahController::class, 'update'])->name('data.matakuliah.update');
         Route::delete('/{id}/hapus', [App\Http\Controllers\MatakuliahController::class, 'destroy'])->name('data.matakuliah.delete');
     });
+    Route::prefix('ruangan')->group(function () {
+        Route::get('/', [App\Http\Controllers\RuanganController::class, 'index'])->name('data.ruangan');
+        Route::get('/tambah', [App\Http\Controllers\RuanganController::class, 'create'])->name('data.ruangan.create');
+        Route::post('/simpan', [App\Http\Controllers\RuanganController::class, 'store'])->name('data.ruangan.store');
+        Route::get('/{id}/edit', [App\Http\Controllers\RuanganController::class, 'edit'])->name('data.ruangan.edit');
+        Route::put('/{id}/update', [App\Http\Controllers\RuanganController::class, 'update'])->name('data.ruangan.update');
+        Route::delete('/{id}/hapus', [App\Http\Controllers\RuanganController::class, 'destroy'])->name('data.ruangan.delete');
+    });
 })->name('data.');

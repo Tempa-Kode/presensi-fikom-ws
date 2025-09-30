@@ -136,6 +136,11 @@
                                         class="nav-link {{ Route::currentRouteName() == "data.matakuliah" ? "text-primary" : "" }}"><i
                                             class="fe fe-box"></i> Data Matakuliah</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ route("data.ruangan" )}}"
+                                        class="nav-link {{ Route::currentRouteName() == "data.ruangan" ? "text-primary" : "" }}"><i
+                                            class="fe fe-box"></i> Data Ruangan</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
