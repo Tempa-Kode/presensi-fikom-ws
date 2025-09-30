@@ -55,4 +55,12 @@ Route::prefix('data')->middleware('auth')->group(function () {
         Route::put('/{id}/update', [App\Http\Controllers\JamController::class, 'update'])->name('data.jam.update');
         Route::delete('/{id}/hapus', [App\Http\Controllers\JamController::class, 'destroy'])->name('data.jam.delete');
     });
+    Route::prefix('kelas')->group(function () {
+        Route::get('/', [App\Http\Controllers\KelasController::class, 'index'])->name('data.kelas');
+        Route::get('/tambah', [App\Http\Controllers\KelasController::class, 'create'])->name('data.kelas.create');
+        Route::post('/simpan', [App\Http\Controllers\KelasController::class, 'store'])->name('data.kelas.store');
+        Route::get('/{id}/edit', [App\Http\Controllers\KelasController::class, 'edit'])->name('data.kelas.edit');
+        Route::put('/{id}/update', [App\Http\Controllers\KelasController::class, 'update'])->name('data.kelas.update');
+        Route::delete('/{id}/hapus', [App\Http\Controllers\KelasController::class, 'destroy'])->name('data.kelas.delete');
+    });
 })->name('data.');

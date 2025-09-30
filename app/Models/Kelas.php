@@ -15,7 +15,7 @@ class Kelas extends Model
         'matkul_id',
         'dosen_id',
         'prodi_id',
-        'tahun_akademik',
+        'tahun_akademik_id',
         'nama_kelas',
     ];
 

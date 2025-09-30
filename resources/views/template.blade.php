@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.3/css/responsive.dataTables.min.css" />
 
+    @stack("styles")
     <style>
         /* Reset body dan html */
         html, body {
@@ -127,6 +128,11 @@
                                             class="fe fe-box"></i> Data Prodi</a>
                                 </li>
                                 <li class="nav-item">
+                                    <a href="{{ route("data.kelas" )}}"
+                                        class="nav-link {{ Route::currentRouteName() == "data.kelas" ? "text-primary" : "" }}"><i
+                                            class="fe fe-box"></i> Data Kelas</a>
+                                </li>
+                                <li class="nav-item">
                                     <a href="{{ route("data.tahun_akademik" )}}"
                                         class="nav-link {{ Route::currentRouteName() == "data.tahun_akademik" ? "text-primary" : "" }}"><i
                                             class="fe fe-box"></i> Data TA</a>
@@ -178,7 +184,7 @@
 
     <!-- Dashboard Core JS (tanpa RequireJS) -->
     <script src="{{ asset("assets/js/dashboard.js") }}"></script>
-
+    @stack("scripts")
     <script type="text/javascript">
         $(document).ready(function() {
             // Debug info
