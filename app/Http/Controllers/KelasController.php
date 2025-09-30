@@ -19,7 +19,18 @@ class KelasController extends Controller
     public function index()
     {
         $data = Kelas::with('dosen', 'prodi', 'matakuliah', 'tahunAkademik')->latest()->get();
-        return view('kelas.index', compact('data'));
+
+        $semester = $data->flatMap(function($item) {
+            if($item->matakuliah && $item->matakuliah->count() > 0) {
+                return $item->matakuliah->pluck('semester');
+            }
+            return [];
+        })->unique()->sort()->values();
+
+        $prodi = Prodi::all();
+        $tahunAkademik = TahunAkademik::all();
+
+        return view('kelas.index', compact('data', 'semester', 'prodi', 'tahunAkademik'));
     }
 
     /**
