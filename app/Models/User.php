@@ -27,6 +27,7 @@ class User extends Authenticatable
         'nama',
         'password',
         'role',
+        'stambuk',
         'foto',
     ];
 

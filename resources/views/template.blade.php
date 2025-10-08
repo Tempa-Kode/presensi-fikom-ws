@@ -123,6 +123,11 @@
                                             class="fe fe-box"></i> Data Dosen</a>
                                 </li>
                                 <li class="nav-item">
+                                    <a href="{{ route("data.mahasiswa") }}"
+                                        class="nav-link {{ Route::currentRouteName() == "data.mahasiswa" ? "text-primary" : "" }}"><i
+                                            class="fe fe-box"></i> Data Mahasiswa</a>
+                                </li>
+                                <li class="nav-item">
                                     <a href="{{ route("data.prodi" )}}"
                                         class="nav-link {{ Route::currentRouteName() == "data.prodi" ? "text-primary" : "" }}"><i
                                             class="fe fe-box"></i> Data Prodi</a>
