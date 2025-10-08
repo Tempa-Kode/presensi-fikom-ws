@@ -71,4 +71,12 @@ Route::prefix('data')->middleware('auth')->group(function () {
         Route::put('/{id}/update', [App\Http\Controllers\MahasiswaController::class, 'update'])->name('data.mahasiswa.update');
         Route::delete('/{id}/hapus', [App\Http\Controllers\MahasiswaController::class, 'destroy'])->name('data.mahasiswa.delete');
     });
+    Route::prefix('jadwal')->group(function () {
+        Route::get('/', [App\Http\Controllers\JadwalController::class, 'index'])->name('data.jadwal');
+        Route::get('/tambah', [App\Http\Controllers\JadwalController::class, 'create'])->name('data.jadwal.create');
+        Route::post('/simpan', [App\Http\Controllers\JadwalController::class, 'store'])->name('data.jadwal.store');
+        Route::get('/{id}/edit', [App\Http\Controllers\JadwalController::class, 'edit'])->name('data.jadwal.edit');
+        Route::put('/{id}/update', [App\Http\Controllers\JadwalController::class, 'update'])->name('data.jadwal.update');
+        Route::delete('/{id}/hapus', [App\Http\Controllers\JadwalController::class, 'destroy'])->name('data.jadwal.delete');
+    });
 })->name('data.');
