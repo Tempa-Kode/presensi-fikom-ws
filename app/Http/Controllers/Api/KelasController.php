@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Kelas;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Kelas;
 use Dedoc\Scramble\Attributes\Group;
+use App\Http\Resources\KelasResource;
 use Dedoc\Scramble\Attributes\PathParameter;
 
 class KelasController extends Controller
@@ -40,14 +41,13 @@ class KelasController extends Controller
                 ], 404);
             }
 
-            return (new \App\Http\Resources\KelasResource($data, true, 'Data kelas berdasarkan NIDN Dosen'))
-                ->response()
+            return (new KelasResource(
+                true,
+                'Data kelas berdasarkan NIDN Dosen',
+                $data,
+            ))->response()
                 ->setStatusCode(200);
-            return response()->json([
-                'status' => true,
-                'message' => 'Data kelas berdasarkan NIDN Dosen',
-                'data' => $data
-            ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
