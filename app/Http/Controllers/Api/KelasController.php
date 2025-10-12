@@ -133,6 +133,50 @@ class KelasController extends Controller
                 'Berhasil mendaftar ke kelas: ' . $request->kode_kelas,
                 $data,
             ))->response()
+                ->setStatusCode(201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Group('Akses Mahasiswa')]
+    /**
+     * Menampilkan daftar kelas yang diambil/didaftarkan.
+     *
+     * Mahasiswa dapat melihat daftar kelas yang telah diambil/didaftarkan.
+     *
+     * @return Response.
+     */
+    public function kelasByMahasiswa(Request $request)
+    {
+        try {
+            $mahasiswa = $request->user();
+
+            $kelas = KelasMatakuliahMahasiswa::where('mahasiswa_id', $mahasiswa->id)
+                ->with('kelas.matakuliah', 'kelas.dosen', 'kelas.prodi')
+                ->get();
+
+            $data = Kelas::whereHas('mahasiswa', function ($query) use ($mahasiswa) {
+                $query->where('mahasiswa_id', $mahasiswa->id);
+            })->with([
+                'dosen',
+                'matakuliah',
+                'prodi',
+                'jadwal',
+                'jadwal.ruangan',
+                'jadwal.jam',
+                'tahunAkademik'
+            ])->get();
+
+            return (new KelasResource(
+                true,
+                'Daftar kelas/matakuliah yang diambil',
+                $data,
+            ))->response()
                 ->setStatusCode(200);
 
         } catch (\Exception $e) {

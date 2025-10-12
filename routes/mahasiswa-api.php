@@ -7,3 +7,8 @@ Route::post(
     '/kelas/daftar',
     [App\Http\Controllers\Api\KelasController::class, 'daftarKelas']
 )->middleware('auth:sanctum');
+
+Route::get(
+    '/kelas/mahasiswa/{npm}',
+    [App\Http\Controllers\Api\KelasController::class, 'kelasByMahasiswa']
+)->middleware('auth:sanctum');
