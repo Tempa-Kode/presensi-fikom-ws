@@ -15,6 +15,8 @@ class KelasController extends Controller
     /**
      * Kelas Berdasarkan Dosen.
      *
+     * Mengambil data kelas(matakuliah) berdasarkan NIDN Dosen. dimana Dosen dapat melihat daftar kelas yang diampunya
+     *
      * @param string $nidn
      * @return Response.
      */
