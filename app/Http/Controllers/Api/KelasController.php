@@ -6,10 +6,10 @@ use App\Models\User;
 use App\Models\Kelas;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\KelasByIdResource;
 use Dedoc\Scramble\Attributes\Group;
 use App\Http\Resources\KelasResource;
 use App\Models\KelasMatakuliahMahasiswa;
+use App\Http\Resources\KelasByIdResource;
 use Dedoc\Scramble\Attributes\PathParameter;
 
 class KelasController extends Controller
@@ -147,7 +147,7 @@ class KelasController extends Controller
     /**
      * Menampilkan daftar kelas yang diambil/didaftarkan.
      *
-     * Mahasiswa dapat melihat daftar kelas yang telah diambil/didaftarkan.
+     * Mahasiswa dapat melihat daftar kelas yang telah diambil/didaftarkan. berdasarkan NPM mahasiswa yang sedang login.
      *
      * @return Response.
      */

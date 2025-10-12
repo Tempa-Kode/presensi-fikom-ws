@@ -9,6 +9,6 @@ Route::post(
 )->middleware('auth:sanctum');
 
 Route::get(
-    '/kelas/mahasiswa/{npm}',
+    '/kelas/mahasiswa/',
     [App\Http\Controllers\Api\KelasController::class, 'kelasByMahasiswa']
 )->middleware('auth:sanctum');
