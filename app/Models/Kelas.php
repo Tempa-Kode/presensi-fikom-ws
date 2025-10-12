@@ -44,4 +44,9 @@ class Kelas extends Model
     {
         return $this->belongsTo(TahunAkademik::class, 'tahun_akademik_id');
     }
+
+    public function mahasiswa() : BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'kelas_matakuliah_mahasiswa', 'kelas_id', 'mahasiswa_id');
+    }
 }
