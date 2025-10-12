@@ -12,3 +12,9 @@ Route::get(
     '/kelas/mahasiswa/',
     [App\Http\Controllers\Api\KelasController::class, 'kelasByMahasiswa']
 )->middleware('auth:sanctum');
+
+Route::get(
+    '/sesi-absensi/aktif',
+    [App\Http\Controllers\Api\AbsensiController::class, 'sesiAbsensiAktif']
+)->middleware('auth:sanctum');
+

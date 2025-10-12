@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\SesiKuliah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\SesiKuliahByIdResource;
-use App\Models\SesiKuliah;
 use Dedoc\Scramble\Attributes\Group;
+use App\Models\KelasMatakuliahMahasiswa;
+use App\Http\Resources\SesiKuliahResource;
+use App\Http\Resources\SesiKuliahByIdResource;
 
 class AbsensiController extends Controller
 {
@@ -63,5 +66,50 @@ class AbsensiController extends Controller
             ], 500);
         }
 
+    }
+
+    #[Group('Akses Mahasiswa')]
+    /**
+     * Melihat Sesi Absensi Aktif
+     *
+     * Mahasiswa dapat melihat sesi absensi yang sedang aktif.
+     *
+     * @return Response.
+     */
+    public function sesiAbsensiAktif(Request $request)
+    {
+        try {
+            $mahasiswa = $request->user();
+
+            $sesi = KelasMatakuliahMahasiswa::where('mahasiswa_id', $mahasiswa->id)
+                    ->whereHas('kelas.jadwal.sesiKuliah', function ($query) {
+                        $query->where('status_absensi', 'buka');
+                    })
+                    ->with(['kelas.jadwal.sesiKuliah' => function ($query) {
+                        $query->where('status_absensi', 'buka');
+                    }, 'kelas.jadwal', 'kelas', 'kelas.matakuliah', 'kelas.dosen', 'kelas.jadwal.sesiKuliah'])
+                    ->get();
+
+            if ($sesi->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tidak ada sesi absensi aktif.'
+                ], 404);
+            }
+
+            Log::info($sesi);
+
+            return (new SesiKuliahResource(
+                true,
+                'Sesi absensi aktif ditemukan.',
+                $sesi
+            ))->response()
+                ->setStatusCode(200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil data sesi absensi aktif.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
