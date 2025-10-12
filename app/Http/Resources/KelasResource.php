@@ -31,9 +31,10 @@ class KelasResource extends JsonResource
                 $matakuliah = $item->matakuliah->first();
                 return [
                     'id' => $item->id,
-                        'nama_kelas' => $matakuliah
+                    'nama_kelas' => $matakuliah
                         ? $matakuliah->nama_matkul . ' - ' . $item->nama_kelas
                         : $item->nama_kelas,
+                    'kode_kelas' => $item->kode_kelas,
                     'prodi' => [
                         'id' => $item->prodi->id,
                         'nama_prodi' => $item->prodi->nama_prodi,
@@ -59,7 +60,7 @@ class KelasResource extends JsonResource
                             'jam' => $jadwal->jam->kode_jam,
                             'ruangan' => $jadwal->ruangan ? [
                                 'id' => $jadwal->ruangan->id,
-                                'nama_ruangan' => $jadwal->ruangan->nama_ruangan,
+                                'nama_ruangan' => "Ruang {$jadwal->ruangan->nama_ruang}",
                             ] : null,
                             'tipe_pertemuan' => $jadwal->tipe_pertemuan,
                         ];

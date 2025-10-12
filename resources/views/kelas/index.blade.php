@@ -58,6 +58,7 @@
                                 <tr>
                                     <th>No</th>
                                     <th class="d-none d-sm-table-cell">Prodi</th>
+                                    <th class="d-none d-sm-table-cell">Kode Kelas</th>
                                     <th class="d-none d-sm-table-cell">Nama Matkul / Kelas</th>
                                     <th class="d-none d-sm-table-cell">Dosen</th>
                                     <th class="d-none d-sm-table-cell">TA</th>
@@ -76,6 +77,7 @@
                                         data-tahun-akademik="{{ $item->tahun_akademik_id }}">
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $item->prodi->nama_prodi }}</td>
+                                        <td>{{ $item->kode_kelas }}</td>
                                         <td>
                                             @if ($item->matakuliah && $item->matakuliah->count() > 0)
                                                 {{ $item->matakuliah->first()->nama_matkul }} - ({{ $item->nama_kelas }})

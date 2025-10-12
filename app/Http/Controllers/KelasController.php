@@ -6,9 +6,10 @@ use App\Models\User;
 use App\Models\Kelas;
 use App\Models\Prodi;
 use App\Models\Matakuliah;
-use App\Models\MatakuliahKelas;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\TahunAkademik;
+use App\Models\MatakuliahKelas;
 use Illuminate\Support\Facades\DB;
 
 class KelasController extends Controller
@@ -65,6 +66,7 @@ class KelasController extends Controller
 
         DB::beginTransaction();
         try {
+            $validasi['kode_kelas'] = Str::random(6);
             $kelas = Kelas::create($validasi);
             MatakuliahKelas::create([
                 'matkul_id' => $request->matkul_id,
