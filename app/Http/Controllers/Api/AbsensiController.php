@@ -70,6 +70,49 @@ class AbsensiController extends Controller
 
     }
 
+    #[Group('Akses Dosen')]
+    /**
+     * Menutup Sesi Absensi
+     *
+     * Dosen dapat menutup sesi absensi untuk kelas yang diampunya.
+     *
+     * @return Response.
+     */
+    public function tutupSesiAbsensi(Request $request, $sesiId)
+    {
+        $sesi = SesiKuliah::where('id', $sesiId)
+            ->where('status_absensi', 'buka')
+            ->first();
+
+        if (!$sesi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sesi absensi tidak ditemukan atau sudah ditutup.'
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $sesi->status_absensi = 'tutup';
+            $sesi->waktu_tutup = Carbon::now();
+            $sesi->save();
+            DB::commit();
+            return (new SesiKuliahByIdResource(
+                true,
+                'Sesi absensi berhasil ditutup.',
+                $sesi
+            ))->response()
+                ->setStatusCode(200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal menutup sesi absensi.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
     #[Group('Akses Mahasiswa')]
     /**
      * Melihat Sesi Absensi Aktif
