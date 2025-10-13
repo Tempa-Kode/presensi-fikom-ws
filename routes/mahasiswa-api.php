@@ -18,3 +18,7 @@ Route::get(
     [App\Http\Controllers\Api\AbsensiController::class, 'sesiAbsensiAktif']
 )->middleware('auth:sanctum');
 
+Route::post(
+    '/sesi-absensi/hadir',
+    [App\Http\Controllers\Api\AbsensiController::class, 'absensi']
+)->middleware('auth:sanctum');
