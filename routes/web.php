@@ -59,9 +59,11 @@ Route::prefix('data')->middleware('auth')->group(function () {
         Route::get('/', [App\Http\Controllers\KelasController::class, 'index'])->name('data.kelas');
         Route::get('/tambah', [App\Http\Controllers\KelasController::class, 'create'])->name('data.kelas.create');
         Route::post('/simpan', [App\Http\Controllers\KelasController::class, 'store'])->name('data.kelas.store');
+        Route::get('/{id}/detail', [App\Http\Controllers\KelasController::class, 'detail'])->name('data.kelas.detail');
         Route::get('/{id}/edit', [App\Http\Controllers\KelasController::class, 'edit'])->name('data.kelas.edit');
         Route::put('/{id}/update', [App\Http\Controllers\KelasController::class, 'update'])->name('data.kelas.update');
         Route::delete('/{id}/hapus', [App\Http\Controllers\KelasController::class, 'destroy'])->name('data.kelas.delete');
+        Route::delete('/kelas/{kelasId}/mahasiswa/{mahasiswaId}', [App\Http\Controllers\KelasController::class, 'keluarkan'])->name('data.kelas.keluarkan');
     });
     Route::prefix('mahasiswa')->group(function () {
         Route::get('/', [App\Http\Controllers\MahasiswaController::class, 'index'])->name('data.mahasiswa');

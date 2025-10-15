@@ -91,6 +91,8 @@
                                             <div class="btn-group">
                                                 <a href="{{ route("data.kelas.edit", $item->id) }}"
                                                     class="btn btn-sm btn-primary">Edit</a>
+                                                <a href="{{ route("data.kelas.detail", $item->id) }}"
+                                                    class="btn btn-sm btn-warning">Detail</a>
                                                 <form action="{{ route("data.kelas.delete", $item->id) }}" method="POST"
                                                     class="d-inline">
                                                     @csrf

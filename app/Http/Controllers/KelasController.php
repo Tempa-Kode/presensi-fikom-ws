@@ -144,4 +144,37 @@ class KelasController extends Controller
             return redirect()->back()->with('error', 'Kelas gagal dihapus: ' . $th->getMessage());
         }
     }
+
+    /**
+     * Menampilkan detail kelas
+     */
+    public function detail($id)
+    {
+        $kelas = Kelas::with(
+            'dosen',
+            'prodi',
+            'matakuliah',
+            'tahunAkademik',
+            'mahasiswa'
+        )->findOrFail($id);
+
+        return view('kelas.show', compact('kelas'));
+    }
+
+    /**
+     * Mengeluarkan mahasiswa dari kelas
+     */
+    public function keluarkan($kelasId, $mahasiswaId)
+    {
+        DB::beginTransaction();
+        try {
+            $kelas = Kelas::findOrFail($kelasId);
+            $kelas->mahasiswa()->detach($mahasiswaId);
+            DB::commit();
+            return redirect()->back()->with('success', "Mahasiswa berhasil dikeluarkan dari kelas");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal mengeluarkan mahasiswa: ' . $th->getMessage());
+        }
+    }
 }
