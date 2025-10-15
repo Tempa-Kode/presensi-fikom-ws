@@ -17,3 +17,8 @@ Route::post(
     '/sesi-absensi/tutup/{sesi_id}',
     [App\Http\Controllers\Api\AbsensiController::class, 'tutupSesiAbsensi']
 )->middleware('auth:sanctum');
+
+Route::get(
+    '/absensi/kelas/{kelasId}/sesi/{sesiId}',
+    [App\Http\Controllers\Api\AbsensiController::class, 'daftarAbsensiBySesi']
+)->middleware('auth:sanctum');;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Resources\AbsensiPertemuanResource;
 use App\Models\SesiKuliah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -259,10 +260,44 @@ class AbsensiController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
+                'status' => false,
                 'message' => 'Gagal melakukan absensi.',
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    #[Group('Akses Dosen')]
+    /**
+     * Daftar Absensi by Sesi
+     *
+     * Dosen dapat melihat daftar absensi mahasiswa untuk sesi tertentu.
+     *
+     * @return Response.
+     */
+    public function daftarAbsensiBySesi($kelasId, $sesiId)
+    {
+        $sesi = SesiKuliah::where('id', $sesiId)
+            ->with([
+                'jadwal',
+                'jadwal.kelas',
+                'jadwal.kelas.matakuliah',
+                'absensi.mahasiswa'
+            ])->first();
+
+        if (!$sesi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sesi absensi tidak ditemukan.'
+            ], 404);
+        }
+
+        Log::info('Sesi: ', $sesi->toArray());
+        return (new AbsensiPertemuanResource(
+            true,
+            'Daftar absensi untuk sesi ditemukan.',
+            $sesi
+        ));
     }
 
     private function hitungJarak($lat1, $lon1, $lat2, $lon2)
