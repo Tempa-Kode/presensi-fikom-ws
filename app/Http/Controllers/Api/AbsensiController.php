@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AbsensiBySesiResource;
+use App\Http\Resources\RiwayatAbsensiResource;
 use Dedoc\Scramble\Attributes\Group;
 use App\Models\KelasMatakuliahMahasiswa;
 use App\Http\Resources\SesiKuliahResource;
@@ -312,5 +313,30 @@ class AbsensiController extends Controller
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c;
+    }
+
+    #[Group('Akses Mahasiswa')]
+    /**
+     * Riwayat Absensi by Jadwal
+     *
+     * Mahasiswa dapat melihat absensi yang telah dilakukan berdasarkan pertemuan/jadwal.
+     *
+     * @return Response.
+     */
+    public function riwayatAbsensi(Request $request, $jadwalId)
+    {
+        $mahasiswa = $request->user();
+
+        $absensi = Absensi::where('mahasiswa_id', $mahasiswa->id)
+            ->whereHas('sesiKuliah.jadwal', fn($q) => $q->where('id', $jadwalId))
+            ->with(['sesiKuliah.jadwal.kelas.matakuliah', 'sesiKuliah.jadwal.ruangan'])
+            ->get();
+
+        return (new RiwayatAbsensiResource(
+            true,
+            'Riwayat absensi ditemukan.',
+            $absensi
+        ))->response()
+            ->setStatusCode(200);
     }
 }

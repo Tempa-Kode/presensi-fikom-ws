@@ -22,3 +22,8 @@ Route::post(
     '/sesi-absensi/hadir',
     [App\Http\Controllers\Api\AbsensiController::class, 'absensi']
 )->middleware('auth:sanctum');
+
+Route::get(
+    '/sesi-absensi/{jadwalId}/riwayat',
+    [App\Http\Controllers\Api\AbsensiController::class, 'riwayatAbsensi']
+)->middleware('auth:sanctum');
