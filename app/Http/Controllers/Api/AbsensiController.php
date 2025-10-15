@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Resources\AbsensiPertemuanResource;
+use App\Models\Kelas;
 use App\Models\SesiKuliah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -277,27 +278,25 @@ class AbsensiController extends Controller
      */
     public function daftarAbsensiBySesi($kelasId, $sesiId)
     {
-        $sesi = SesiKuliah::where('id', $sesiId)
+        $kelas = Kelas::query()
+            ->where('id', $kelasId)
+            ->whereHas('jadwal.sesiKuliah', fn($q) => $q->where('id', $sesiId))
             ->with([
-                'jadwal',
-                'jadwal.kelas',
-                'jadwal.kelas.matakuliah',
-                'absensi.mahasiswa'
-            ])->first();
+                'matakuliah',
+                'jadwal' => fn($q) =>
+                    $q->whereHas('sesiKuliah', fn($qq) => $qq->where('id', $sesiId))
+                    ->with(['sesiKuliah' => fn($qq) => $qq->where('id', $sesiId)]),
+                'mahasiswa' => fn($q) =>
+                    $q->with(['absensi' => fn($aq) => $aq->where('sesi_kuliah_id', $sesiId)]),
+            ])
+            ->firstOrFail();
 
-        if (!$sesi) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Sesi absensi tidak ditemukan.'
-            ], 404);
-        }
-
-        Log::info('Sesi: ', $sesi->toArray());
         return (new AbsensiPertemuanResource(
             true,
             'Daftar absensi untuk sesi ditemukan.',
-            $sesi
-        ));
+            $kelas
+        ))->response()
+            ->setStatusCode(200);
     }
 
     private function hitungJarak($lat1, $lon1, $lat2, $lon2)

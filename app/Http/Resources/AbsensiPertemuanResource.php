@@ -18,51 +18,63 @@ class AbsensiPertemuanResource extends JsonResource
         $this->message = $message;
     }
 
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
+        // mengambil satu jadwal & satu sesi_kuliah yang sudah difilter di controller
+        $jadwal = $this->jadwal->first();
+        $sesi   = $jadwal?->sesiKuliah?->first();
+
+        // mengambil satu matakuliah (kalau ada)
+        $matkul = $this->matakuliah->first();
+
+        // mengumpulkan semua entri absensi (sudah difilter per sesi di controller)
+        $absensi = $this->mahasiswa->flatMap(fn ($mhs) => $mhs->absensi);
+
+        $countBy = fn (string $status) => $absensi->where('status', $status)->count();
+
         return [
-            'status' => $this->status,
+            'status'  => $this->status,
             'message' => $this->message,
-            'data' => [
-                'tanggal' => $this->tanggal,
-                'waktu_buka' => $this->waktu_buka,
-                'waktu_tutup' => $this->waktu_tutup,
-                'kelas' => [
-                    'id' => $this->jadwal->kelas->id,
-                    'nama_kelas' => $this->jadwal->kelas->nama_kelas,
-                    'matakuliah' => [
-                        'kode_matkul' => $this->jadwal->kelas->matakuliah[0]->kode_matkul,
-                        'nama' => $this->jadwal->kelas->matakuliah[0]->nama_matkul,
-                        'sks' => $this->jadwal->kelas->matakuliah[0]->sks,
-                        'tipe_pertemuan' => $this->jadwal->tipe_pertemuan,
-                    ],
+            'data'    => [
+                'tanggal'     => $sesi?->tanggal,
+                'waktu_buka'  => $sesi?->waktu_buka,
+                'waktu_tutup' => $sesi?->waktu_tutup,
+                'kelas'       => [
+                    'id'          => $this->id,
+                    'nama_kelas'  => $this->nama_kelas,
+                    'matakuliah'  => $matkul ? [
+                        'kode_matkul'     => $matkul->kode_matkul,
+                        'nama'            => $matkul->nama_matkul,
+                        'sks'             => $matkul->sks,
+                        'tipe_pertemuan'  => $jadwal?->tipe_pertemuan,
+                    ] : null,
                 ],
                 'absensi' => [
-                    'hadir' => $this->absensi->where('status', 'hadir')->count(),
-                    'izin' => $this->absensi->where('status', 'izin')->count(),
-                    'sakit' => $this->absensi->where('status', 'sakit')->count(),
-                    'alpha' => $this->absensi->where('status', 'alfa')->count(),
-                    'total_mahasiswa' => $this->absensi->count(),
-                    'daftar' => $this->absensi->map(function ($item) {
+                    'hadir'           => $countBy('hadir'),
+                    'izin'            => $countBy('izin'),
+                    'sakit'           => $countBy('sakit'),
+                    'alpha'           => $countBy('alfa'),
+                    'total_mahasiswa' => $this->mahasiswa->count(),
+                    'daftar'          => $this->mahasiswa->map(function ($mhs) {
+                        $a = $mhs->absensi->first();
                         return [
-                            'mahasiswa_id' => $item->mahasiswa->id,
-                            'waktu_absensi' => $item->waktu_absensi,
-                            'npm' => $item->mahasiswa->npm,
-                            'nama' => $item->mahasiswa->nama,
-                            'stambuk' => $item->mahasiswa->stambuk,
-                            'status' => $item->status,
+                            'mahasiswa_id'  => $mhs->id,
+                            'npm'           => $mhs->npm,
+                            'nama'          => $mhs->nama,
+                            'stambuk'       => $mhs->stambuk,
+                            'absensi'     => $a ? [
+                                'id'     => $a->id,
+                                'waktu' => $a->waktu_absensi,
+                                'status' => $a->status,
+                            ] : null,
                         ];
-                    })
-                ]
+                    })->values(),
+                ],
             ],
             'meta' => [
-                'total' => $this->absensi->count(),
+                'total' => $this->mahasiswa->count(),
             ],
         ];
     }
 }
+
