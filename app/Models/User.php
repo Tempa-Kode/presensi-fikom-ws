@@ -65,7 +65,7 @@ class User extends Authenticatable
 
     public function absensi() : HasMany
     {
-        return $this->hasMany(Absensi::class);
+        return $this->hasMany(Absensi::class, 'mahasiswa_id');
     }
 
     public function pengajuanIzinSakit() : HasMany
