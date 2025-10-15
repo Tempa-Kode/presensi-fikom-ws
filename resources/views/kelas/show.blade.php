@@ -19,7 +19,7 @@
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Matakuliah/Kelas: {{ $kelas->matakuliah->first()->nama_matkul }} - {{ $kelas->nama_kelas }}</h5>
-                        <p class="card-text"><strong>Dosen:</strong> {{ $kelas->dosen->nama }}</p>
+                        <p class="card-text"><strong>Dosen:</strong> {{ $kelas->dosen->nidn }} - {{ $kelas->dosen->nama }}</p>
                         <p class="card-text"><strong>Program Studi:</strong> {{ $kelas->prodi->nama_prodi }}</p>
                         <p class="card-text"><strong>Semester:</strong> {{ $kelas->matakuliah->first()->semester }}</p>
                         <p class="card-text"><strong>Tahun Akademik:</strong> {{ $kelas->tahunAkademik->nama_tahun }}</p>
