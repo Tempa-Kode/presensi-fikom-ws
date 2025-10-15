@@ -45,6 +45,10 @@ class SesiKuliahResource extends JsonResource
                         ],
                         'semester' => $matakuliah->semester,
                         'sks' => $matakuliah->sks,
+                        'kelas' => [
+                            'id' => $item->kelas->id,
+                            'nama_kelas' => $item->kelas->nama_kelas,
+                        ],
                     ],
                     'jadwal' => [
                         'id' => $jadwal->id,
