@@ -1,6 +1,6 @@
 <?php
-require_once('dosen-api.php');
-require_once('mahasiswa-api.php');
+require 'dosen-api.php';
+require 'mahasiswa-api.php';
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
