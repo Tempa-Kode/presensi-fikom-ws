@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Models\Kelas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AbsensiKelasResource;
 use Dedoc\Scramble\Attributes\Group;
 use App\Http\Resources\KelasResource;
 use App\Models\KelasMatakuliahMahasiswa;
@@ -185,5 +187,44 @@ class KelasController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    #[Group('Akses Dosen')]
+    /**
+     * Absensi By Kelas ID
+     *
+     * Dosen dapat melihat daftar absensi mahasiswa berdasarkan kelas yang dipilih.
+     *
+     * @return Response.
+     */
+    public function absensiByKelas($kelasId)
+    {
+        $kelas = Kelas::query()
+            ->where('id', $kelasId)
+            ->with([
+                'matakuliah',
+                'dosen',
+                'jadwal',
+                'prodi',
+                'mahasiswa',
+                'jadwal.sesiKuliah',
+                'jadwal.sesiKuliah.absensi',
+                'jadwal.sesiKuliah.absensi.mahasiswa',
+            ])
+            ->firstOrFail();
+
+        if (!$kelas) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kelas dengan ID: ' . $kelasId . ' tidak ditemukan.'
+            ], 404);
+        }
+
+        return (new AbsensiKelasResource(
+            true,
+            'Data absensi berdasarkan kelas ID: ' . $kelasId,
+            $kelas,
+        ))->response()
+            ->setStatusCode(200);
     }
 }
