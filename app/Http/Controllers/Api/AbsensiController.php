@@ -339,4 +339,72 @@ class AbsensiController extends Controller
         ))->response()
             ->setStatusCode(200);
     }
+
+    #[Group('Akses Dosen')]
+    /**
+     * Edit Status Absensi
+     *
+     * Dosen dapat mengedit status absensi mahasiswa untuk sesi tertentu.
+     *
+     * @return Response.
+     */
+    public function editStatusAbsensi(Request $request, $sesiId, $mahasiswaId)
+    {
+        $validasi = $request->validate([
+            'status' => 'required|in:hadir,izin,alfa,sakit',
+        ]);
+
+        $sesi = SesiKuliah::where('id', $sesiId)->first();
+        if (!$sesi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sesi kuliah tidak ditemukan.'
+            ], 404);
+        }
+
+        $absensi = Absensi::where('sesi_kuliah_id', $sesiId)
+            ->where('mahasiswa_id', $mahasiswaId)
+            ->first();
+
+        DB::beginTransaction();
+        try {
+            $data = null;
+            if (!$absensi) {
+                $data = Absensi::create([
+                    'sesi_kuliah_id' => $sesiId,
+                    'mahasiswa_id' => $mahasiswaId,
+                    'waktu_absensi' => Carbon::now(),
+                    'status' => $validasi['status'],
+                ]);
+            } else {
+                if ($absensi->status === $validasi['status']) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Status absensi sudah sesuai.'
+                    ], 400);
+                } else {
+                    $absensi->status = $validasi['status'];
+                    $absensi->save();
+                    $data = $absensi;
+                }
+            }
+
+            DB::commit();
+
+            return (new AbsensiBySesiResource(
+                true,
+                'Status absensi berhasil diubah.',
+                $data
+            ))->response()
+                ->setStatusCode(200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mengubah status absensi.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

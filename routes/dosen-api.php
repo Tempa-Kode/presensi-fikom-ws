@@ -26,5 +26,9 @@ Route::get(
 Route::get(
     '/absensi/kelas/{kelasId}/sesi/{sesiId}',
     [App\Http\Controllers\Api\AbsensiController::class, 'daftarAbsensiBySesi']
-)->middleware('auth:sanctum');;
+)->middleware('auth:sanctum');
 
+Route::put(
+    '/absensi/sesi/{sesiId}/mahasiswa/{mahasiswaId}',
+    [App\Http\Controllers\Api\AbsensiController::class, 'editStatusAbsensi']
+)->middleware('auth:sanctum');
