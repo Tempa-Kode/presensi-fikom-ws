@@ -17,6 +17,7 @@ use App\Models\KelasMatakuliahMahasiswa;
 use App\Http\Resources\SesiKuliahResource;
 use App\Http\Resources\SesiKuliahByIdResource;
 use App\Models\Absensi;
+use App\Models\PengajuanIzinSakit;
 
 class AbsensiController extends Controller
 {
@@ -403,6 +404,88 @@ class AbsensiController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Gagal mengubah status absensi.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Group('Akses Mahasiswa')]
+    /**
+     * Mengajukan Izin/Sakit
+     *
+     * Mahasiswa dapat mengajukan izin atau sakit untuk sesi tertentu.
+     *
+     * @return Response.
+     */
+    public function ajukanIzinSakit(Request $request, $sesiId)
+    {
+        $validasi = $request->validate([
+            'status' => 'required|in:izin,sakit',
+            'keterangan' => 'required',
+            'bukti_file' => 'nullable|file',
+        ]);
+        $mahasiswa = $request->user();
+
+        $sesi = SesiKuliah::where('id', $sesiId)->first();
+        if (!$sesi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sesi kuliah tidak ditemukan.'
+            ], 404);
+        }
+
+        $absensiExist = Absensi::where('sesi_kuliah_id', $sesiId)
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->first();
+        if ($absensiExist) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Anda sudah melakukan absensi untuk sesi ini.',
+                'absensi' => $absensiExist
+            ], 400);
+        }
+
+        // mengecek apakah sudah ada pengajuan izin/sakit untuk sesi ini
+        $pengajuanExist = PengajuanIzinSakit::where('sesi_kuliah_id', $sesiId)
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->first();
+        if ($pengajuanExist) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Anda sudah mengajukan izin/sakit untuk sesi ini.',
+                'data' => $pengajuanExist,
+            ], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            $validasi['sesi_kuliah_id'] = $sesiId;
+            $validasi['mahasiswa_id'] = $mahasiswa->id;
+            $validasi['status_validasi'] = 'pending';
+
+            // handler upload file jika ada, dan simpan ke folder public/uploads/bukti_absensi
+            if ($request->hasFile('bukti_file')) {
+                $file = $request->file('bukti_file');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/bukti_file'), $filename);
+                $validasi['bukti_file_path'] = 'uploads/bukti_file/' . $filename;
+            }
+
+            $data = PengajuanIzinSakit::create($validasi);
+            DB::commit();
+
+            return (new AbsensiBySesiResource(
+                true,
+                "Pengajuan {$validasi['status']} berhasil dikirim.",
+                $data
+            ))->response()
+                ->setStatusCode(201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mengajukan izin/sakit.',
                 'error' => $e->getMessage()
             ], 500);
         }

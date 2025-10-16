@@ -27,3 +27,8 @@ Route::get(
     '/sesi-absensi/{jadwalId}/riwayat',
     [App\Http\Controllers\Api\AbsensiController::class, 'riwayatAbsensi']
 )->middleware('auth:sanctum');
+
+Route::post(
+    '/sesi-absensi/{sesiId}/pengajuan-izin-sakit',
+    [App\Http\Controllers\Api\AbsensiController::class, 'ajukanIzinSakit']
+)->middleware('auth:sanctum');
