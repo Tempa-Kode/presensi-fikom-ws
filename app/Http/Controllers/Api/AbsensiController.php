@@ -18,6 +18,7 @@ use App\Http\Resources\AbsensiBySesiResource;
 use App\Http\Resources\RiwayatAbsensiResource;
 use App\Http\Resources\SesiKuliahByIdResource;
 use App\Http\Resources\AbsensiPertemuanResource;
+use App\Http\Resources\ValidasiPengajuanResource;
 use App\Http\Resources\PengajuanIzinSakitResource;
 
 class AbsensiController extends Controller
@@ -533,5 +534,59 @@ class AbsensiController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    #[Group('Akses Dosen')]
+    /**
+     * Validasi Pengajuan Izin/Sakit
+     *
+     * Dosen dapat melakukan validasi terhadap pengajuan izin/sakit mahasiswa pada setiap kelas yang diampunya.
+     *
+     * @return Response.
+     */
+    public function validasiPengajuanIzinSakit(Request $request, $pengajuanId)
+    {
+        $validasi = $request->validate([
+            'status_validasi' => 'required|in:terima,tolak',
+        ]);
+
+        $pengajuan = PengajuanIzinSakit::find($pengajuanId);
+        if (!$pengajuan) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Pengajuan izin/sakit tidak ditemukan.'
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            $pengajuan->update($validasi);
+            $absensi = Absensi::create([
+                'sesi_kuliah_id' => $pengajuan->sesi_kuliah_id,
+                'mahasiswa_id' => $pengajuan->mahasiswa_id,
+                'waktu_absensi' => Carbon::now(),
+                'status' => $validasi['status_validasi'] === 'terima' ? $pengajuan->status : 'alfa',
+            ]);
+
+            DB::commit();
+            return (new ValidasiPengajuanResource(
+                true,
+                'Pengajuan izin/sakit berhasil divalidasi.',
+                (object)[
+                    'mahasiswa' => $pengajuan->mahasiswa,
+                    'pengajuan' => $pengajuan,
+                    'absensi' => $absensi
+                ]
+            ))->response()
+                ->setStatusCode(200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal memvalidasi pengajuan izin/sakit.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
     }
 }
