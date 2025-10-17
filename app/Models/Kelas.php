@@ -49,4 +49,9 @@ class Kelas extends Model
     {
         return $this->belongsToMany(User::class, 'kelas_matakuliah_mahasiswa', 'kelas_id', 'mahasiswa_id');
     }
+
+    public function pengajuanIzinSakit() : HasMany
+    {
+        return $this->hasMany(PengajuanIzinSakit::class, 'kelas_id');
+    }
 }

@@ -11,6 +11,7 @@ class PengajuanIzinSakit extends Model
 
     protected $fillable = [
         'sesi_kuliah_id',
+        'kelas_id',
         'mahasiswa_id',
         'status',
         'keterangan',
@@ -26,5 +27,10 @@ class PengajuanIzinSakit extends Model
     public function mahasiswa() : BelongsTo
     {
         return $this->belongsTo(User::class, 'mahasiswa_id');
+    }
+
+    public function kelas() : BelongsTo
+    {
+        return $this->belongsTo(Kelas::class, 'kelas_id');
     }
 }

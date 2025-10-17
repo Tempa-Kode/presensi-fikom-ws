@@ -417,7 +417,7 @@ class AbsensiController extends Controller
      *
      * @return Response.
      */
-    public function ajukanIzinSakit(Request $request, $sesiId)
+    public function ajukanIzinSakit(Request $request, $kelasId, $sesiId )
     {
         $validasi = $request->validate([
             'status' => 'required|in:izin,sakit',
@@ -460,6 +460,7 @@ class AbsensiController extends Controller
         DB::beginTransaction();
         try {
             $validasi['sesi_kuliah_id'] = $sesiId;
+            $validasi['kelas_id'] = $kelasId;
             $validasi['mahasiswa_id'] = $mahasiswa->id;
             $validasi['status_validasi'] = 'pending';
 
