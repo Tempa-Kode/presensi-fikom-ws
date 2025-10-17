@@ -2,22 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Resources\AbsensiPertemuanResource;
 use App\Models\Kelas;
+use App\Models\Absensi;
 use App\Models\SesiKuliah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Models\PengajuanIzinSakit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\AbsensiBySesiResource;
-use App\Http\Resources\RiwayatAbsensiResource;
 use Dedoc\Scramble\Attributes\Group;
 use App\Models\KelasMatakuliahMahasiswa;
 use App\Http\Resources\SesiKuliahResource;
+use App\Http\Resources\AbsensiBySesiResource;
+use App\Http\Resources\RiwayatAbsensiResource;
 use App\Http\Resources\SesiKuliahByIdResource;
-use App\Models\Absensi;
-use App\Models\PengajuanIzinSakit;
+use App\Http\Resources\AbsensiPertemuanResource;
+use App\Http\Resources\PengajuanIzinSakitResource;
 
 class AbsensiController extends Controller
 {
@@ -487,6 +488,48 @@ class AbsensiController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Gagal mengajukan izin/sakit.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Group('Akses Dosen')]
+    /**
+     * Melihat pengajuan izin/sakit mahasiswa pada setiap kelas
+     *
+     * Dosen dapat melihat pengajuan izin/sakit mahasiswa pada setiap kelas yang diampunya.
+     *
+     * @return Response.
+     */
+    public function pengajuanIzinSakitByKelas($kelasId)
+    {
+        $kelas = Kelas::where('id', $kelasId)->first();
+        if (!$kelas) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kelas tidak ditemukan.'
+            ], 404);
+        }
+
+        $pengajuan = $kelas->pengajuanIzinSakit()->with('mahasiswa', 'sesiKuliah')->latest()->get();
+        if ($pengajuan->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tidak ada pengajuan izin/sakit pada kelas ini.'
+            ], 404);
+        }
+
+        try {
+            return (new PengajuanIzinSakitResource(
+                true,
+                'Daftar pengajuan izin/sakit ditemukan.',
+                $pengajuan
+            ))->response()
+                ->setStatusCode(200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mengambil pengajuan izin/sakit.',
                 'error' => $e->getMessage()
             ], 500);
         }
