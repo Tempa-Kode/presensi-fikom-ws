@@ -12,6 +12,9 @@ use Dedoc\Scramble\Attributes\Group;
 use App\Http\Resources\KelasResource;
 use App\Models\KelasMatakuliahMahasiswa;
 use App\Http\Resources\KelasByIdResource;
+use App\Http\Resources\JadwalKelasResource;
+use App\Http\Resources\JadwalKelasDosenResource;
+use App\Models\Jadwal;
 use Dedoc\Scramble\Attributes\PathParameter;
 
 class KelasController extends Controller
@@ -20,7 +23,7 @@ class KelasController extends Controller
     /**
      * Kelas Berdasarkan Dosen.
      *
-     * Mengambil data kelas(matakuliah) berdasarkan NIDN Dosen. dimana Dosen dapat melihat daftar kelas yang diampunya
+     * Mengambil data jadwal kelas(matakuliah) berdasarkan NIDN Dosen. dimana Dosen dapat melihat daftar jadwal kelas yang diampunya
      *
      * @param string $nidn
      * @return Response.
@@ -29,29 +32,31 @@ class KelasController extends Controller
     public function kelasByDosen($nidn)
     {
         try{
-            $data = Kelas::whereHas('dosen', function ($query) use ($nidn) {
+            // Ambil jadwal berdasarkan kelas yang diampu dosen
+            $jadwalData = Jadwal::whereHas('kelas.dosen', function ($query) use ($nidn) {
                 $query->where('nidn', $nidn);
             })->with([
-                'dosen',
-                'matakuliah',
-                'prodi',
-                'jadwal',
-                'jadwal.ruangan',
-                'jadwal.jam',
-                'tahunAkademik'
+                'kelas.dosen',
+                'kelas.matakuliah',
+                'kelas.prodi',
+                'kelas.tahunAkademik',
+                'kelas.mahasiswa',
+                'ruangan',
+                'jam',
+                'sesiKuliah.absensi'
             ])->get();
 
-            if($data->isEmpty()){
+            if($jadwalData->isEmpty()){
                 return response()->json([
                     'status' => false,
-                    'message' => 'Data kelas tidak ditemukan untuk NIDN Dosen: ' . $nidn
+                    'message' => 'Data jadwal kelas tidak ditemukan untuk NIDN Dosen: ' . $nidn
                 ], 404);
             }
 
-            return (new KelasResource(
+            return (new JadwalKelasDosenResource(
                 true,
-                'Data kelas berdasarkan NIDN Dosen',
-                $data,
+                'Data jadwal kelas berdasarkan NIDN Dosen',
+                $jadwalData,
             ))->response()
                 ->setStatusCode(200);
 
@@ -158,26 +163,23 @@ class KelasController extends Controller
         try {
             $mahasiswa = $request->user();
 
-            $kelas = KelasMatakuliahMahasiswa::where('mahasiswa_id', $mahasiswa->id)
-                ->with('kelas.matakuliah', 'kelas.dosen', 'kelas.prodi')
-                ->get();
-
-            $data = Kelas::whereHas('mahasiswa', function ($query) use ($mahasiswa) {
+            // Ambil jadwal berdasarkan kelas yang diambil mahasiswa
+            $jadwalData = Jadwal::whereHas('kelas.mahasiswa', function ($query) use ($mahasiswa) {
                 $query->where('mahasiswa_id', $mahasiswa->id);
             })->with([
-                'dosen',
-                'matakuliah',
-                'prodi',
-                'jadwal',
-                'jadwal.ruangan',
-                'jadwal.jam',
-                'tahunAkademik'
+                'kelas.dosen',
+                'kelas.matakuliah',
+                'kelas.prodi',
+                'kelas.tahunAkademik',
+                'ruangan',
+                'jam',
+                'sesiKuliah.absensi'
             ])->get();
 
-            return (new KelasResource(
+            return (new JadwalKelasResource(
                 true,
-                'Daftar kelas/matakuliah yang diambil',
-                $data,
+                'Daftar jadwal kelas/matakuliah yang diambil',
+                $jadwalData,
             ))->response()
                 ->setStatusCode(200);
 
