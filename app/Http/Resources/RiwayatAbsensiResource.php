@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class RiwayatAbsensiResource extends JsonResource
@@ -24,6 +25,7 @@ class RiwayatAbsensiResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $kelas = $this->resource->first()?->sesiKuliah;
         return [
             'status' => $this->status,
             'message' => $this->message,
@@ -35,22 +37,26 @@ class RiwayatAbsensiResource extends JsonResource
                     'sakit' => $this->resource->where('status', 'sakit')->count(),
                     'alfa' => $this->resource->where('status', 'alfa')->count(),
                 ],
+                'jadwal' => [
+                    'jadwal_id' => $kelas?->jadwal->id,
+                    'tipe_pertemuan' => $kelas?->jadwal->tipe_pertemuan,
+                ],
+                'kelas' => [
+                    'kelas_id' => $kelas?->jadwal->kelas->id,
+                    'nama_kelas' =>  ($kelas?->jadwal->kelas->matakuliah->first()?->nama_matkul ?? '') . ' - ' . $kelas?->jadwal->kelas->nama_kelas,
+                ],
+                'dosen' => [
+                    'dosen_id' => $kelas?->jadwal->kelas->dosen->id,
+                    'nidn' => $kelas?->jadwal->kelas->dosen->nidn,
+                    'nama' => $kelas?->jadwal->kelas->dosen->nama,
+                ],
                 'riwayat_absensi' => $this->resource->map(function ($item) {
+                    $tanggal = Carbon::parse($item->sesiKuliah->tanggal);
                     return [
                         'sesi_kuliah_id' => $item->sesi_kuliah_id,
-                        'tanggal' => $item->sesiKuliah->tanggal,
+                        'tanggal' => $tanggal->locale('id')->translatedFormat('l, d F Y'),
                         'waktu_absensi' => $item->waktu_absensi,
                         'status' => $item->status,
-                        'kelas' => [
-                            'id' => $item->sesiKuliah->jadwal->kelas->id,
-                            'nama_kelas' => $item->sesiKuliah->jadwal->kelas->nama_kelas,
-                            'tipe_pertemuan' => $item->sesiKuliah->jadwal->tipe_pertemuan,
-                        ],
-                        'matakuliah' => [
-                            'id' => $item->sesiKuliah->jadwal->kelas->matakuliah->first()->id,
-                            'kode_matkul' => $item->sesiKuliah->jadwal->kelas->matakuliah->first()->kode_matkul,
-                            'nama_matkul' => $item->sesiKuliah->jadwal->kelas->matakuliah->first()->nama_matkul,
-                        ],
                     ];
                 })
             ]

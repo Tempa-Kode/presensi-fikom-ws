@@ -332,8 +332,10 @@ class AbsensiController extends Controller
 
         $absensi = Absensi::where('mahasiswa_id', $mahasiswa->id)
             ->whereHas('sesiKuliah.jadwal', fn($q) => $q->where('id', $jadwalId))
-            ->with(['sesiKuliah.jadwal.kelas.matakuliah', 'sesiKuliah.jadwal.ruangan'])
+            ->with(['sesiKuliah.jadwal.kelas.matakuliah', 'sesiKuliah.jadwal.kelas.dosen', 'sesiKuliah.jadwal.ruangan'])
             ->get();
+
+        Log::info("Absensi: ", $absensi->toArray());
 
         return (new RiwayatAbsensiResource(
             true,
