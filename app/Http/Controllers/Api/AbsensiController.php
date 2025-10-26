@@ -495,6 +495,14 @@ class AbsensiController extends Controller
             }
 
             $data = PengajuanIzinSakit::create($validasi);
+
+            Absensi::create([
+                'sesi_kuliah_id' => $sesiId,
+                'mahasiswa_id' => $mahasiswa->id,
+                'waktu_absensi' => Carbon::now(),
+                'status' => $validasi['status'],
+            ]);
+
             DB::commit();
 
             return (new AbsensiBySesiResource(
