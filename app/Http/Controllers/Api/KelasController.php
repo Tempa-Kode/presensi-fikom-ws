@@ -229,4 +229,44 @@ class KelasController extends Controller
         ))->response()
             ->setStatusCode(200);
     }
+
+    #[Group('Akses Mahasiswa')]
+    /**
+     * Jadwal Kelas By Mahasiswa NPM.
+     *
+     * Mahasiswa dapat melihat daftar jadwal kelas yang diambilnya berdasarkan urutan hari dan jam.
+     *
+     * @return Response.
+     */
+    public function jadwalKelasByMahasiswaNpm(Request $request)
+    {
+        try {
+            $mahasiswa = $request->user();
+            // Ambil jadwal berdasarkan kelas yang diambil mahasiswa
+            $jadwalData = Jadwal::whereHas('kelas.mahasiswa', function ($query) use ($mahasiswa) {
+                $query->where('mahasiswa_id', $mahasiswa->id);
+            })->with([
+                'kelas.dosen',
+                'kelas.matakuliah',
+                'kelas.prodi',
+                'kelas.tahunAkademik',
+                'ruangan',
+                'jam',
+                'sesiKuliah.absensi'
+            ])->orderBy('hari', 'asc')->orderBy('jam_id', 'asc')->get();
+
+            return (new JadwalKelasResource(
+                true,
+                'Daftar jadwal kelas/matakuliah yang diambil',
+                $jadwalData,
+            ))->response()
+                ->setStatusCode(200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
