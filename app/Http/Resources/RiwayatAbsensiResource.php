@@ -55,12 +55,27 @@ class RiwayatAbsensiResource extends JsonResource
                 ],
                 'riwayat_absensi' => $absensi->map(function ($item) {
                     $tanggal = Carbon::parse($item->sesiKuliah->tanggal);
-                    return [
+                    $data = [
                         'sesi_kuliah_id' => $item->sesi_kuliah_id,
                         'tanggal' => $tanggal->locale('id')->translatedFormat('l, d F Y'),
                         'waktu_absensi' => $item->waktu_absensi,
                         'status' => $item->status,
                     ];
+
+                    // Tambahkan info pengajuan jika ada
+                    if (isset($item->pengajuan) && $item->pengajuan) {
+                        $data['pengajuan_izin_sakit'] = [
+                            'id' => $item->pengajuan->id,
+                            'status_pengajuan' => $item->pengajuan->status,
+                            'keterangan' => $item->pengajuan->keterangan,
+                            'status_validasi' => $item->pengajuan->status_validasi,
+                            'bukti_file_path' => $item->pengajuan->bukti_file_path,
+                        ];
+                    } else {
+                        $data['pengajuan_izin_sakit'] = null;
+                    }
+
+                    return $data;
                 })
             ]
         ];

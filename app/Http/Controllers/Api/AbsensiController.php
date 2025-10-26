@@ -344,8 +344,28 @@ class AbsensiController extends Controller
 
         $absensi = Absensi::where('mahasiswa_id', $mahasiswa->id)
             ->whereHas('sesiKuliah.jadwal', fn($q) => $q->where('id', $jadwalId))
-            ->with(['sesiKuliah.jadwal.kelas.matakuliah', 'sesiKuliah.jadwal.kelas.dosen', 'sesiKuliah.jadwal.ruangan'])
+            ->with([
+                'sesiKuliah.jadwal.kelas.matakuliah',
+                'sesiKuliah.jadwal.kelas.dosen',
+                'sesiKuliah.jadwal.ruangan'
+            ])
+            ->join('sesi_kuliah', 'absensi.sesi_kuliah_id', '=', 'sesi_kuliah.id')
+            ->orderBy('sesi_kuliah.tanggal', 'desc')
+            ->orderBy('absensi.waktu_absensi', 'desc')
+            ->select('absensi.*')
             ->get();
+
+        // Ambil semua pengajuan izin/sakit untuk mahasiswa ini pada jadwal ini
+        $pengajuanIds = $absensi->pluck('sesi_kuliah_id');
+        $pengajuanMap = PengajuanIzinSakit::where('mahasiswa_id', $mahasiswa->id)
+            ->whereIn('sesi_kuliah_id', $pengajuanIds)
+            ->get()
+            ->keyBy('sesi_kuliah_id');
+
+        // Attach pengajuan ke setiap absensi
+        $absensi->each(function ($item) use ($pengajuanMap) {
+            $item->pengajuan = $pengajuanMap->get($item->sesi_kuliah_id);
+        });
 
         Log::info("Absensi: ", $absensi->toArray());
 

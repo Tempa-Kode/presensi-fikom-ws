@@ -27,4 +27,10 @@ class Absensi extends Model
     {
         return $this->belongsTo(User::class, 'mahasiswa_id');
     }
+
+    public function pengajuanIzinSakit() : BelongsTo
+    {
+        return $this->belongsTo(PengajuanIzinSakit::class, 'sesi_kuliah_id', 'sesi_kuliah_id')
+            ->where('pengajuan_izin_sakit.mahasiswa_id', $this->mahasiswa_id);
+    }
 }
