@@ -25,32 +25,35 @@ class RiwayatAbsensiResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $kelas = $this->resource->first()?->sesiKuliah;
+        // Akses data dari object yang dikirim controller
+        $absensi = $this->resource->absensi;
+        $jadwal = $this->resource->jadwal;
+
         return [
             'status' => $this->status,
             'message' => $this->message,
             'data' => [
                 'statistik' => [
-                    'total_pertemuan' => $this->resource->count(),
-                    'hadir' => $this->resource->where('status', 'hadir')->count(),
-                    'izin' => $this->resource->where('status', 'izin')->count(),
-                    'sakit' => $this->resource->where('status', 'sakit')->count(),
-                    'alfa' => $this->resource->where('status', 'alfa')->count(),
+                    'total_pertemuan' => $absensi->count(),
+                    'hadir' => $absensi->where('status', 'hadir')->count(),
+                    'izin' => $absensi->where('status', 'izin')->count(),
+                    'sakit' => $absensi->where('status', 'sakit')->count(),
+                    'alfa' => $absensi->where('status', 'alfa')->count(),
                 ],
                 'jadwal' => [
-                    'jadwal_id' => $kelas?->jadwal->id,
-                    'tipe_pertemuan' => $kelas?->jadwal->tipe_pertemuan,
+                    'jadwal_id' => $jadwal->id,
+                    'tipe_pertemuan' => $jadwal->tipe_pertemuan,
                 ],
                 'kelas' => [
-                    'kelas_id' => $kelas?->jadwal->kelas->id,
-                    'nama_kelas' =>  ($kelas?->jadwal->kelas->matakuliah->first()?->nama_matkul ?? '') . ' - ' . $kelas?->jadwal->kelas->nama_kelas,
+                    'kelas_id' => $jadwal->kelas->id,
+                    'nama_kelas' =>  ($jadwal->kelas->matakuliah->first()?->nama_matkul ?? '') . ' - ' . $jadwal->kelas->nama_kelas,
                 ],
                 'dosen' => [
-                    'dosen_id' => $kelas?->jadwal->kelas->dosen->id,
-                    'nidn' => $kelas?->jadwal->kelas->dosen->nidn,
-                    'nama' => $kelas?->jadwal->kelas->dosen->nama,
+                    'dosen_id' => $jadwal->kelas->dosen->id,
+                    'nidn' => $jadwal->kelas->dosen->nidn,
+                    'nama' => $jadwal->kelas->dosen->nama,
                 ],
-                'riwayat_absensi' => $this->resource->map(function ($item) {
+                'riwayat_absensi' => $absensi->map(function ($item) {
                     $tanggal = Carbon::parse($item->sesiKuliah->tanggal);
                     return [
                         'sesi_kuliah_id' => $item->sesi_kuliah_id,

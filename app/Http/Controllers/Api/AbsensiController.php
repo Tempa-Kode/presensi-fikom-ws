@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Kelas;
+use App\Models\Jadwal;
 use App\Models\Absensi;
 use App\Models\SesiKuliah;
 use Illuminate\Http\Request;
@@ -330,6 +331,17 @@ class AbsensiController extends Controller
     {
         $mahasiswa = $request->user();
 
+        // Ambil data jadwal terlebih dahulu untuk memastikan data kelas dan dosen tersedia
+        $jadwal = \App\Models\Jadwal::with(['kelas.matakuliah', 'kelas.dosen', 'ruangan'])
+            ->find($jadwalId);
+
+        if (!$jadwal) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Jadwal tidak ditemukan.'
+            ], 404);
+        }
+
         $absensi = Absensi::where('mahasiswa_id', $mahasiswa->id)
             ->whereHas('sesiKuliah.jadwal', fn($q) => $q->where('id', $jadwalId))
             ->with(['sesiKuliah.jadwal.kelas.matakuliah', 'sesiKuliah.jadwal.kelas.dosen', 'sesiKuliah.jadwal.ruangan'])
@@ -337,10 +349,16 @@ class AbsensiController extends Controller
 
         Log::info("Absensi: ", $absensi->toArray());
 
+        // Buat object gabungan untuk resource
+        $data = (object)[
+            'absensi' => $absensi,
+            'jadwal' => $jadwal
+        ];
+
         return (new RiwayatAbsensiResource(
             true,
             'Riwayat absensi ditemukan.',
-            $absensi
+            $data
         ))->response()
             ->setStatusCode(200);
     }
