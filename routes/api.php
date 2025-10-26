@@ -10,3 +10,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/login', App\Http\Controllers\Api\LoginController::class);
+Route::post('/update-foto-profil', [App\Http\Controllers\Api\ProfilController::class, 'updateFotoProfil'])->middleware('auth:sanctum');
