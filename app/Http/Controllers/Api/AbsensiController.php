@@ -82,6 +82,7 @@ class AbsensiController extends Controller
      * Menutup Sesi Absensi
      *
      * Dosen dapat menutup sesi absensi untuk kelas yang diampunya.
+     * Semua mahasiswa yang belum melakukan absensi akan otomatis ditandai sebagai alfa.
      *
      * @return Response.
      */
@@ -89,6 +90,7 @@ class AbsensiController extends Controller
     {
         $sesi = SesiKuliah::where('id', $sesiId)
             ->where('status_absensi', 'buka')
+            ->with('jadwal.kelas')
             ->first();
 
         if (!$sesi) {
@@ -100,13 +102,53 @@ class AbsensiController extends Controller
 
         DB::beginTransaction();
         try {
+            // Dapatkan semua mahasiswa yang terdaftar di kelas
+            $kelasId = $sesi->jadwal->kelas_id;
+            $mahasiswaTerdaftar = KelasMatakuliahMahasiswa::where('kelas_id', $kelasId)
+                ->pluck('mahasiswa_id')
+                ->toArray();
+
+            // Dapatkan mahasiswa yang sudah melakukan absensi
+            $mahasiswaSudahAbsen = Absensi::where('sesi_kuliah_id', $sesiId)
+                ->pluck('mahasiswa_id')
+                ->toArray();
+
+            // Mahasiswa yang belum absen
+            $mahasiswaBelumAbsen = array_diff($mahasiswaTerdaftar, $mahasiswaSudahAbsen);
+
+            // Tandai mahasiswa yang belum absen sebagai alfa
+            $waktuSekarang = Carbon::now();
+            $dataAlfa = [];
+            foreach ($mahasiswaBelumAbsen as $mahasiswaId) {
+                $dataAlfa[] = [
+                    'sesi_kuliah_id' => $sesiId,
+                    'mahasiswa_id' => $mahasiswaId,
+                    'waktu_absensi' => $waktuSekarang,
+                    'status' => 'alfa',
+                    'created_at' => $waktuSekarang,
+                    'updated_at' => $waktuSekarang,
+                ];
+            }
+
+            if (!empty($dataAlfa)) {
+                Absensi::insert($dataAlfa);
+            }
+
+            // Tutup sesi absensi
             $sesi->status_absensi = 'tutup';
-            $sesi->waktu_tutup = Carbon::now();
+            $sesi->waktu_tutup = $waktuSekarang;
             $sesi->save();
+
             DB::commit();
+
+            $message = 'Sesi absensi berhasil ditutup.';
+            if (count($mahasiswaBelumAbsen) > 0) {
+                $message .= ' ' . count($mahasiswaBelumAbsen) . ' mahasiswa ditandai alfa.';
+            }
+
             return (new SesiKuliahByIdResource(
                 true,
-                'Sesi absensi berhasil ditutup.',
+                $message,
                 $sesi
             ))->response()
                 ->setStatusCode(200);
