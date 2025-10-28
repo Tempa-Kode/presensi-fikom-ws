@@ -40,6 +40,7 @@ class AbsensiPertemuanResource extends JsonResource
                 'tanggal'     => $sesi?->tanggal,
                 'waktu_buka'  => $sesi?->waktu_buka,
                 'waktu_tutup' => $sesi?->waktu_tutup,
+                'status'       => $sesi?->status_absensi,
                 'kelas'       => [
                     'id'          => $this->id,
                     'nama_kelas'  => $this->nama_kelas,

@@ -199,33 +199,24 @@ class KelasController extends Controller
      *
      * @return Response.
      */
-    public function absensiByKelas($kelasId)
+    public function absensiByKelas($jadwalId)
     {
-        $kelas = Kelas::query()
-            ->where('id', $kelasId)
-            ->with([
-                'matakuliah',
-                'dosen',
-                'jadwal',
-                'prodi',
-                'mahasiswa',
-                'jadwal.sesiKuliah',
-                'jadwal.sesiKuliah.absensi',
-                'jadwal.sesiKuliah.absensi.mahasiswa',
-            ])
-            ->firstOrFail();
+        $jadwal = Jadwal::find($jadwalId)->with('kelas', 'kelas.matakuliah', 'sesiKuliah')->first();
+        // $jadwal = Jadwal::where('id', $jadwalId)->first();
 
-        if (!$kelas) {
+        if (!$jadwal) {
             return response()->json([
                 'status' => false,
-                'message' => 'Kelas dengan ID: ' . $kelasId . ' tidak ditemukan.'
+                'message' => 'Jadwal dengan ID: ' . $jadwalId . ' tidak ditemukan.'
             ], 404);
         }
 
+        Log::info('Mengambil data absensi untuk Jadwal ID: ' . $jadwal);
+
         return (new AbsensiKelasResource(
             true,
-            'Data absensi berdasarkan kelas ID: ' . $kelasId,
-            $kelas,
+            'Data absensi berdasarkan kelas ID: ' . $jadwalId,
+            $jadwal,
         ))->response()
             ->setStatusCode(200);
     }

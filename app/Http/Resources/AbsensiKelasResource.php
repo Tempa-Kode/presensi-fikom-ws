@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class AbsensiKelasResource extends JsonResource
@@ -25,60 +26,63 @@ class AbsensiKelasResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $kelas = $this->resource->kelas;
+        $matakuliah = $kelas->matakuliah->first();
+
+        // Map semua sesi kuliah
+        $sesiKuliah = $this->resource->sesiKuliah->map(function ($sesi) {
+            $tanggalFormatted = null;
+            if ($sesi->tanggal) {
+                $carbon = Carbon::parse($sesi->tanggal);
+                $carbon->locale('id');
+                $tanggalFormatted = $carbon->isoFormat('dddd, D MMMM YYYY');
+            }
+
+            return [
+                'id' => $sesi->id,
+                'tanggal' => $sesi->tanggal,
+                'tanggal_formatted' => $tanggalFormatted,
+                'status_absensi' => $sesi->status_absensi,
+                'waktu_buka' => $sesi->waktu_buka,
+                'waktu_tutup' => $sesi->waktu_tutup,
+                'jumlah_hadir' => $sesi->absensi->where('status', 'hadir')->count(),
+                'jumlah_izin' => $sesi->absensi->where('status', 'izin')->count(),
+                'jumlah_sakit' => $sesi->absensi->where('status', 'sakit')->count(),
+                'jumlah_alfa' => $sesi->absensi->where('status', 'alfa')->count(),
+                'total_absensi' => $sesi->absensi->count(),
+            ];
+        });
+
         return [
             'status' => $this->status,
             'message' => $this->message,
             'data' => [
-                'kelas_id' => $this->resource->id,
-                'nama_kelas' => $this->resource->nama_kelas,
-                'prodi' => $this->resource->prodi->nama_prodi ?? null,
-                'tipe_pertemuan' => $this->resource->jadwal[0]->tipe_pertemuan ?? null,
-                'matakuliah' => [
-                    'id' => $this->resource->matakuliah[0]->id ?? null,
-                    'kode_matkul' => $this->resource->matakuliah[0]->kode_matkul ?? null,
-                    'nama_matkul' => $this->resource->matakuliah[0]->nama_matkul ?? null,
-                    'sks' => $this->resource->matakuliah[0]->sks ?? null,
-                    'semester' => $this->resource->matakuliah[0]->semester ?? null,
-                    'dosen' => [
-                        'id' => $this->resource->dosen->id ?? null,
-                        'nidn' => $this->resource->dosen->nidn ?? null,
-                        'nama' => $this->resource->dosen->nama ?? null,
-                    ],
+                'jadwal_id' => $this->resource->id,
+                'nama_kelas' => $matakuliah->nama_matkul . ' - ' . $kelas->nama_kelas,
+                'hari' => $this->resource->hari,
+                'jam' => [
+                    'id' => $this->resource->jam->id ?? null,
+                    'kode_jam' => $this->resource->jam->kode_jam ?? null,
+                    'jam_mulai' => $this->resource->jam->jam_mulai ?? null,
+                    'jam_selesai' => $this->resource->jam->jam_selesai ?? null,
                 ],
-                'absensi' => collect($this->resource->jadwal)->flatMap(function ($jadwal) {
-                    if (!$jadwal->sesiKuliah || $jadwal->sesiKuliah->isEmpty()) {
-                        return collect([]);
-                    }
-
-                    return $jadwal->sesiKuliah->map(function ($sesi) {
-                        // mengambil semua mahasiswa yang terdaftar di kelas
-                        $semuaMahasiswa = $this->resource->mahasiswa;
-
-                        // membuat map absensi berdasarkan mahasiswa_id untuk akses cepat
-                        $absensiMap = $sesi->absensi ? $sesi->absensi->keyBy('mahasiswa_id') : collect();
-
-                        // Generate daftar absensi untuk semua mahasiswa
-                        $absensiMahasiswa = $semuaMahasiswa->map(function ($mahasiswa) use ($absensiMap) {
-                            $absensi = $absensiMap->get($mahasiswa->id);
-
-                            return [
-                                'absensi_id' => $absensi ? $absensi->id : null,
-                                'mahasiswa_id' => $mahasiswa->id,
-                                'npm' => $mahasiswa->npm,
-                                'nama' => $mahasiswa->nama,
-                                'stambuk' => $mahasiswa->stambuk,
-                                'status' => $absensi ? $absensi->status : null,
-                                'waktu_absensi' => $absensi ? $absensi->waktu_absensi : null,
-                            ];
-                        });
-
-                        return [
-                            'sesi_id' => $sesi->id,
-                            'tanggal' => $sesi->tanggal,
-                            'daftar' => $absensiMahasiswa,
-                        ];
-                    });
-                }),
+                'ruangan' => [
+                    'id' => $this->resource->ruangan->id ?? null,
+                    'nama_ruang' => $this->resource->ruangan->nama_ruang ?? null,
+                ],
+                'tipe_pertemuan' => $this->resource->tipe_pertemuan ?? null,
+                'matakuliah' => $matakuliah,
+                'dosen' => [
+                    'id' => $kelas->dosen->id ?? null,
+                    'nidn' => $kelas->dosen->nidn ?? null,
+                    'nama' => $kelas->dosen->nama ?? null,
+                ],
+            ],
+            'sesi_kuliah' => $sesiKuliah,
+            'statistik' => [
+                'total_sesi' => $this->resource->sesiKuliah->count(),
+                'sesi_aktif' => $this->resource->sesiKuliah->where('status_absensi', 'buka')->count(),
+                'sesi_tutup' => $this->resource->sesiKuliah->where('status_absensi', 'tutup')->count(),
             ],
         ];
     }
