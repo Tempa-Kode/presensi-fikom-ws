@@ -29,29 +29,32 @@ class AbsensiKelasResource extends JsonResource
         $kelas = $this->resource->kelas;
         $matakuliah = $kelas->matakuliah->first();
 
-        // Map semua sesi kuliah
-        $sesiKuliah = $this->resource->sesiKuliah->map(function ($sesi) {
-            $tanggalFormatted = null;
-            if ($sesi->tanggal) {
-                $carbon = Carbon::parse($sesi->tanggal);
-                $carbon->locale('id');
-                $tanggalFormatted = $carbon->isoFormat('dddd, D MMMM YYYY');
-            }
+        // Map semua sesi kuliah dan urutkan dari yang terbaru
+        $sesiKuliah = $this->resource->sesiKuliah
+            ->sortByDesc('tanggal')
+            ->values()
+            ->map(function ($sesi) {
+                $tanggalFormatted = null;
+                if ($sesi->tanggal) {
+                    $carbon = Carbon::parse($sesi->tanggal);
+                    $carbon->locale('id');
+                    $tanggalFormatted = $carbon->isoFormat('dddd, D MMMM YYYY');
+                }
 
-            return [
-                'id' => $sesi->id,
-                'tanggal' => $sesi->tanggal,
-                'tanggal_formatted' => $tanggalFormatted,
-                'status_absensi' => $sesi->status_absensi,
-                'waktu_buka' => $sesi->waktu_buka,
-                'waktu_tutup' => $sesi->waktu_tutup,
-                'jumlah_hadir' => $sesi->absensi->where('status', 'hadir')->count(),
-                'jumlah_izin' => $sesi->absensi->where('status', 'izin')->count(),
-                'jumlah_sakit' => $sesi->absensi->where('status', 'sakit')->count(),
-                'jumlah_alfa' => $sesi->absensi->where('status', 'alfa')->count(),
-                'total_absensi' => $sesi->absensi->count(),
-            ];
-        });
+                return [
+                    'id' => $sesi->id,
+                    'tanggal' => $sesi->tanggal,
+                    'tanggal_formatted' => $tanggalFormatted,
+                    'status_absensi' => $sesi->status_absensi,
+                    'waktu_buka' => $sesi->waktu_buka,
+                    'waktu_tutup' => $sesi->waktu_tutup,
+                    'jumlah_hadir' => $sesi->absensi->where('status', 'hadir')->count(),
+                    'jumlah_izin' => $sesi->absensi->where('status', 'izin')->count(),
+                    'jumlah_sakit' => $sesi->absensi->where('status', 'sakit')->count(),
+                    'jumlah_alfa' => $sesi->absensi->where('status', 'alfa')->count(),
+                    'total_absensi' => $sesi->absensi->count(),
+                ];
+            });
 
         return [
             'status' => $this->status,

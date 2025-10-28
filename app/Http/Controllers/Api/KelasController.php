@@ -193,16 +193,15 @@ class KelasController extends Controller
 
     #[Group('Akses Dosen')]
     /**
-     * Absensi By Kelas ID
+     * Absensi By Jadwal ID
      *
-     * Dosen dapat melihat daftar absensi mahasiswa berdasarkan kelas yang dipilih.
+     * Dosen dapat melihat daftar absensi mahasiswa berdasarkan kelas / jadwal yang dipilih.
      *
      * @return Response.
      */
     public function absensiByKelas($jadwalId)
     {
         $jadwal = Jadwal::find($jadwalId)->with('kelas', 'kelas.matakuliah', 'sesiKuliah')->first();
-        // $jadwal = Jadwal::where('id', $jadwalId)->first();
 
         if (!$jadwal) {
             return response()->json([
