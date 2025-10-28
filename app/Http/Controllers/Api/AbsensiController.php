@@ -323,16 +323,31 @@ class AbsensiController extends Controller
      *
      * @return Response.
      */
-    public function daftarAbsensiBySesi($kelasId, $sesiId)
+    public function daftarAbsensiBySesi($sesiId)
     {
+        // Ambil sesi kuliah terlebih dahulu
+        $sesi = SesiKuliah::where('id', $sesiId)
+            ->with(['jadwal.kelas'])
+            ->first();
+
+        if (!$sesi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sesi kuliah tidak ditemukan.'
+            ], 404);
+        }
+
+        // Ambil kelas dari sesi
+        $kelasId = $sesi->jadwal->kelas_id;
+
         $kelas = Kelas::query()
             ->where('id', $kelasId)
-            ->whereHas('jadwal.sesiKuliah', fn($q) => $q->where('id', $sesiId))
             ->with([
                 'matakuliah',
+                'dosen',
                 'jadwal' => fn($q) =>
-                    $q->whereHas('sesiKuliah', fn($qq) => $qq->where('id', $sesiId))
-                    ->with(['sesiKuliah' => fn($qq) => $qq->where('id', $sesiId)]),
+                    $q->where('id', $sesi->jadwal_id)
+                    ->with(['sesiKuliah' => fn($qq) => $qq->where('id', $sesiId), 'ruangan', 'jam']),
                 'mahasiswa' => fn($q) =>
                     $q->with(['absensi' => fn($aq) => $aq->where('sesi_kuliah_id', $sesiId)]),
             ])
