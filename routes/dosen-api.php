@@ -34,8 +34,8 @@ Route::put(
 )->middleware('auth:sanctum');
 
 Route::get(
-    '/pengajuan-izin-sakit/kelas/{kelasId}',
-    [App\Http\Controllers\Api\AbsensiController::class, 'pengajuanIzinSakitByKelas']
+    '/pengajuan-izin-sakit/sesi/{sesiId}',
+    [App\Http\Controllers\Api\AbsensiController::class, 'pengajuanIzinSakitBySesi']
 )->middleware('auth:sanctum');
 
 Route::put(

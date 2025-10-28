@@ -601,27 +601,34 @@ class AbsensiController extends Controller
 
     #[Group('Akses Dosen')]
     /**
-     * Melihat pengajuan izin/sakit mahasiswa pada setiap kelas
+     * Melihat pengajuan izin/sakit mahasiswa pada sesi tertentu
      *
-     * Dosen dapat melihat pengajuan izin/sakit mahasiswa pada setiap kelas yang diampunya.
+     * Dosen dapat melihat pengajuan izin/sakit mahasiswa pada sesi kuliah tertentu.
      *
      * @return Response.
      */
-    public function pengajuanIzinSakitByKelas($kelasId)
+    public function pengajuanIzinSakitBySesi($sesiId)
     {
-        $kelas = Kelas::where('id', $kelasId)->first();
-        if (!$kelas) {
+        $sesi = SesiKuliah::where('id', $sesiId)
+            ->with(['jadwal.kelas.matakuliah', 'jadwal.kelas.dosen', 'jadwal.ruangan', 'jadwal.jam'])
+            ->first();
+
+        if (!$sesi) {
             return response()->json([
                 'status' => false,
-                'message' => 'Kelas tidak ditemukan.'
+                'message' => 'Sesi kuliah tidak ditemukan.'
             ], 404);
         }
 
-        $pengajuan = $kelas->pengajuanIzinSakit()->with('mahasiswa', 'sesiKuliah')->latest()->get();
+        $pengajuan = PengajuanIzinSakit::where('sesi_kuliah_id', $sesiId)
+            ->with(['mahasiswa', 'sesiKuliah'])
+            ->latest()
+            ->get();
+
         if ($pengajuan->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Tidak ada pengajuan izin/sakit pada kelas ini.'
+                'message' => 'Tidak ada pengajuan izin/sakit pada sesi ini.'
             ], 404);
         }
 

@@ -25,27 +25,45 @@ class PengajuanIzinSakitResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $data = $this->resource;
+        // Ambil info sesi dari pengajuan pertama (karena semua pengajuan dalam 1 sesi)
+        $sesiInfo = null;
+        if ($this->resource->isNotEmpty() && $this->resource->first()->sesiKuliah) {
+            $sesi = $this->resource->first()->sesiKuliah;
+            $tanggalFormatted = null;
+            if ($sesi->tanggal) {
+                $carbon = \Carbon\Carbon::parse($sesi->tanggal);
+                $carbon->locale('id');
+                $tanggalFormatted = $carbon->isoFormat('dddd, D MMMM YYYY');
+            }
+
+            $sesiInfo = [
+                'id' => $sesi->id,
+                'tanggal' => $sesi->tanggal,
+                'tanggal_formatted' => $tanggalFormatted,
+                'status_absensi' => $sesi->status_absensi,
+                'waktu_buka' => $sesi->waktu_buka,
+                'waktu_tutup' => $sesi->waktu_tutup,
+            ];
+        }
+
         return [
             'status' => $this->status,
             'message' => $this->message,
-            'data' => $this->resource->map(function ($data) {
+            'sesi_kuliah' => $sesiInfo,
+            'total_pengajuan' => $this->resource->count(),
+            'pengajuan' => $this->resource->map(function ($data) {
                 return [
-                    'pengajuan_id' => $data->id,
-                    'kelas_id' => $data->kelas_id,
+                    'id' => $data->id,
                     'status' => $data->status,
                     'keterangan' => $data->keterangan,
                     'bukti_file_path' => $data->bukti_file_path ? url($data->bukti_file_path) : null,
                     'status_validasi' => $data->status_validasi,
+                    'created_at' => $data->created_at,
                     'mahasiswa' => [
                         'id' => $data->mahasiswa->id,
                         'npm' => $data->mahasiswa->npm,
                         'nama' => $data->mahasiswa->nama,
-                        'stambuk' => $data->mahasiswa->stambuk,
-                    ],
-                    'sesi_kuliah' => [
-                        'id' => $data->sesiKuliah->id,
-                        'tanggal' => $data->sesiKuliah->tanggal,
+                        'stambuk' => $data->mahasiswa->stambuk ?? null,
                     ],
                 ];
             })
