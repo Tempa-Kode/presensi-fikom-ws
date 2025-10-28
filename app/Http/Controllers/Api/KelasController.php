@@ -201,7 +201,7 @@ class KelasController extends Controller
      */
     public function absensiByKelas($jadwalId)
     {
-        $jadwal = Jadwal::find($jadwalId)->with('kelas', 'kelas.matakuliah', 'sesiKuliah')->first();
+        $jadwal = Jadwal::where('id', $jadwalId)->with('kelas', 'kelas.matakuliah', 'sesiKuliah')->first();
 
         if (!$jadwal) {
             return response()->json([
@@ -210,7 +210,7 @@ class KelasController extends Controller
             ], 404);
         }
 
-        Log::info('Mengambil data absensi untuk Jadwal ID: ' . $jadwal);
+        Log::info("Mengambil data absensi untuk Jadwal ID: $jadwalId " . $jadwal);
 
         return (new AbsensiKelasResource(
             true,
