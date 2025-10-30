@@ -31,7 +31,7 @@ class AbsensiKelasResource extends JsonResource
 
         // Map semua sesi kuliah dan urutkan dari yang terbaru
         $sesiKuliah = $this->resource->sesiKuliah
-            ->sortByDesc('tanggal')
+            ->sortByDesc('created_at')
             ->values()
             ->map(function ($sesi) {
                 $tanggalFormatted = null;
