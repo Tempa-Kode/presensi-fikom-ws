@@ -33,4 +33,10 @@ class PengajuanIzinSakit extends Model
     {
         return $this->belongsTo(Kelas::class, 'kelas_id');
     }
+
+    public function absensi()
+    {
+        return $this->hasOne(Absensi::class, 'sesi_kuliah_id', 'sesi_kuliah_id')
+            ->where('mahasiswa_id', $this->mahasiswa_id);
+    }
 }
