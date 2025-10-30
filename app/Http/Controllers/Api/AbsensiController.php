@@ -674,8 +674,9 @@ class AbsensiController extends Controller
         try {
             $pengajuan->update($validasi);
             $absensi = $pengajuan->absensi;
-            $absensi->status = $validasi['status_validasi'] === 'terima' ? $pengajuan->status : 'alfa';
-            $absensi->save();
+            $absensi->update([
+                'status' => $validasi['status_validasi'] === 'terima' ? $pengajuan->status : 'alfa',
+            ]);
 
             DB::commit();
             return (new ValidasiPengajuanResource(
