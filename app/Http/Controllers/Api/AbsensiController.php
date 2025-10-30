@@ -673,12 +673,9 @@ class AbsensiController extends Controller
         DB::beginTransaction();
         try {
             $pengajuan->update($validasi);
-            $absensi = Absensi::create([
-                'sesi_kuliah_id' => $pengajuan->sesi_kuliah_id,
-                'mahasiswa_id' => $pengajuan->mahasiswa_id,
-                'waktu_absensi' => Carbon::now(),
-                'status' => $validasi['status_validasi'] === 'terima' ? $pengajuan->status : 'alfa',
-            ]);
+            $absensi = $pengajuan->absensi;
+            $absensi->status = $validasi['status_validasi'] === 'terima' ? $pengajuan->status : 'alfa';
+            $absensi->save();
 
             DB::commit();
             return (new ValidasiPengajuanResource(
