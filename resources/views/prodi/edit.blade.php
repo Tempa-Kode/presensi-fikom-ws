@@ -40,6 +40,20 @@
                                     value="{{ old("nama_prodi", $data->nama_prodi) }}">
                             </div>
                         </div>
+                        <div class="row mb-3">
+                            <label for="kaprodi_id" class="col-sm-2 col-form-label">Ketua Prodi <span
+                                    class="text-danger">*</span></label>
+                            <div class="col-sm-10">
+                                <select class="form-control" id="kaprodi_id" name="kaprodi_id">
+                                    <option value="">Pilih Ketua Prodi</option>
+                                    @foreach ($dosen as $item)
+                                        <option value="{{ $item->id }}" {{ old("kaprodi_id", $data->kaprodi_id) == $item->id ? "selected" : "" }}>
+                                            {{ $item->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                         <div class="card-footer text-right">
                             <div class="d-flex">
                                 <a href="{{ url()->previous() }}" class="btn btn-link">Batal</a>

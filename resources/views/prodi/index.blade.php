@@ -28,6 +28,7 @@
                                     <th>No</th>
                                     <th class="d-none d-sm-table-cell">Kode Prodi</th>
                                     <th class="d-none d-sm-table-cell">Nama Prodi</th>
+                                    <th class="d-none d-sm-table-cell">Ketua Prodi</th>
                                     <th class="d-none d-md-table-cell">Aksi</th>
                                 </tr>
                             </thead>
@@ -37,6 +38,7 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $item->kode_prodi }}</td>
                                         <td class="d-none d-sm-table-cell">{{ $item->nama_prodi }}</td>
+                                        <td class="d-none d-sm-table-cell">{{ $item->kaprodi->nama ?? '-' }}</td>
                                         <td class="d-none d-md-table-cell">
                                             <div class="btn-group">
                                                 <a href="{{ route('data.prodi.edit', $item->id) }}" class="btn btn-sm btn-primary">Edit</a>

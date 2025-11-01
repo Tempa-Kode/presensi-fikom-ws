@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Prodi;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +23,8 @@ class ProdiController extends Controller
      */
     public function create()
     {
-        return view('prodi.create');
+        $dosen = User::where('role', 'dosen')->get();
+        return view('prodi.create', compact('dosen'));
     }
 
     /**
@@ -32,7 +34,8 @@ class ProdiController extends Controller
     {
         $validasi = $request->validate([
             'kode_prodi' => 'required|unique:prodi,kode_prodi',
-            'nama_prodi' => 'required|unique:prodi,kode_prodi',
+            'nama_prodi' => 'required|unique:prodi,nama_prodi',
+            'kaprodi_id' => 'nullable|exists:users,id',
         ]);
 
         DB::beginTransaction();
@@ -52,7 +55,8 @@ class ProdiController extends Controller
     public function edit($id)
     {
         $data = Prodi::findOrFail($id);
-        return view('prodi.edit', compact('data'));
+        $dosen = User::where('role', 'dosen')->get();
+        return view('prodi.edit', compact('data', 'dosen'));
     }
 
     /**
@@ -63,6 +67,7 @@ class ProdiController extends Controller
         $validasi = $request->validate([
             'kode_prodi' => 'required|unique:prodi,kode_prodi,' . $id,
             'nama_prodi' => 'required|unique:prodi,nama_prodi,' . $id,
+            'kaprodi_id' => 'nullable|exists:users,id',
         ]);
 
         DB::beginTransaction();
