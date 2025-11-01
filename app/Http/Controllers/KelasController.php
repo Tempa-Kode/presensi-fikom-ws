@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\TahunAkademik;
 use App\Models\MatakuliahKelas;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KelasController extends Controller
 {
@@ -224,5 +225,57 @@ class KelasController extends Controller
         }
 
         return view('kelas.absensi', compact('kelas', 'jadwal', 'sesiKuliah', 'absensiData'));
+    }
+
+    /**
+     * Generate PDF untuk daftar hadir
+     */
+    public function cetakAbsensiPDF($kelasId, $jadwalId)
+    {
+        $kelas = Kelas::with([
+            'dosen',
+            'prodi',
+            'matakuliah',
+            'tahunAkademik',
+            'mahasiswa' => function($query) {
+                $query->orderBy('npm', 'asc');
+            }
+        ])->where('id', $kelasId)->first();
+
+        // Ambil jadwal spesifik dengan sesi kuliah dan absensi
+        $jadwal = Jadwal::with([
+            'ruangan',
+            'jam',
+            'sesiKuliah' => function($query) {
+                $query->orderBy('tanggal', 'asc');
+            },
+            'sesiKuliah.absensi'
+        ])->where('id', $jadwalId)
+          ->where('kelas_id', $kelasId)
+          ->first();
+
+        // Ambil sesi kuliah untuk jadwal ini (maksimal 16 pertemuan)
+        $sesiKuliah = $jadwal->sesiKuliah->sortBy('tanggal')->take(16);
+
+        // Buat array absensi untuk setiap mahasiswa di setiap pertemuan
+        $absensiData = [];
+        foreach ($kelas->mahasiswa as $mahasiswa) {
+            $absensiData[$mahasiswa->id] = [];
+            foreach ($sesiKuliah as $index => $sesi) {
+                $absensi = $sesi->absensi->where('mahasiswa_id', $mahasiswa->id)->first();
+                $absensiData[$mahasiswa->id][$index + 1] = $absensi ? $absensi->status : null;
+            }
+        }
+
+        // Generate PDF
+        $pdf = Pdf::loadView('kelas.absensi-pdf', compact('kelas', 'jadwal', 'sesiKuliah', 'absensiData'));
+        $pdf->setPaper('A4', 'portrait');
+
+
+        // Nama file PDF - bersihkan karakter yang tidak valid
+        $namaKelas = preg_replace('/[^A-Za-z0-9_\-]/', '_', $kelas->nama_kelas);
+        $fileName = 'Daftar_Hadir_' . $namaKelas . '_' . date('YmdHis') . '.pdf';
+
+        return $pdf->stream($fileName);
     }
 }

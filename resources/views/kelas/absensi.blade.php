@@ -153,8 +153,12 @@
                             <a href="{{ route("data.kelas.detail", $kelas->id) }}" class="btn btn-secondary">
                                 <i class="fe fe-arrow-left"></i> Kembali
                             </a>
-                            <button onclick="window.print()" class="btn btn-primary">
-                                <i class="fe fe-printer"></i> Cetak
+                            <a href="{{ route("data.kelas.absensi.pdf", [$kelas->id, $jadwal->id]) }}"
+                                class="btn btn-primary" target="_blank">
+                                <i class="fe fe-printer"></i> Cetak PDF
+                            </a>
+                            <button onclick="window.print()" class="btn btn-outline-primary">
+                                <i class="fe fe-printer"></i> Print Browser
                             </button>
                         </div>
                     </div>

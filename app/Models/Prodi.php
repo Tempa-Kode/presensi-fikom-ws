@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Prodi extends Model
 {
     protected $table = 'prodi';
-    protected $fillable = ['kode_prodi', 'nama_prodi'];
+    protected $fillable = ['kode_prodi', 'nama_prodi', 'kaprodi_id'];
 
     public function users() : HasMany
     {
@@ -18,5 +18,10 @@ class Prodi extends Model
     public function kelas() : HasMany
     {
         return $this->hasMany(Kelas::class);
+    }
+
+    public function kaprodi()
+    {
+        return $this->belongsTo(User::class, 'kaprodi_id');
     }
 }
