@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Kelas;
+use App\Models\Jadwal;
 use App\Models\Prodi;
 use App\Models\Matakuliah;
 use Illuminate\Support\Str;
@@ -25,7 +26,7 @@ class KelasController extends Controller
             if($item->matakuliah && $item->matakuliah->count() > 0) {
                 return $item->matakuliah->pluck('semester');
             }
-            return [];
+            return collect();
         })->unique()->sort()->values();
 
         $prodi = Prodi::all();
@@ -155,7 +156,10 @@ class KelasController extends Controller
             'prodi',
             'matakuliah',
             'tahunAkademik',
-            'mahasiswa'
+            'mahasiswa',
+            'jadwal',
+            'jadwal.ruangan',
+            'jadwal.jam'
         )->findOrFail($id);
 
         return view('kelas.show', compact('kelas'));
@@ -176,5 +180,49 @@ class KelasController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal mengeluarkan mahasiswa: ' . $th->getMessage());
         }
+    }
+
+    /**
+     * Menampilkan tabel absensi kelas per jadwal
+     */
+    public function absensi($kelasId, $jadwalId)
+    {
+        $kelas = Kelas::with([
+            'dosen',
+            'prodi',
+            'matakuliah',
+            'tahunAkademik',
+            'mahasiswa' => function($query) {
+                $query->orderBy('npm', 'asc');
+            }
+        ])->where('id', $kelasId)->first();
+
+        // Ambil jadwal spesifik dengan sesi kuliah dan absensi
+        $jadwal = Jadwal::with([
+            'ruangan',
+            'jam',
+            'sesiKuliah' => function($query) {
+                $query->orderBy('tanggal', 'asc');
+            },
+            'sesiKuliah.absensi'
+        ])->where('id', $jadwalId)
+          ->where('kelas_id', $kelasId)
+          ->first();
+
+        // Ambil sesi kuliah untuk jadwal ini (maksimal 16 pertemuan)
+        $sesiKuliah = $jadwal->sesiKuliah->sortBy('tanggal')->take(16);
+        // dd($sesiKuliah);
+
+        // Buat array absensi untuk setiap mahasiswa di setiap pertemuan
+        $absensiData = [];
+        foreach ($kelas->mahasiswa as $mahasiswa) {
+            $absensiData[$mahasiswa->id] = [];
+            foreach ($sesiKuliah as $index => $sesi) {
+                $absensi = $sesi->absensi->where('mahasiswa_id', $mahasiswa->id)->first();
+                $absensiData[$mahasiswa->id][$index + 1] = $absensi ? $absensi->status : null;
+            }
+        }
+
+        return view('kelas.absensi', compact('kelas', 'jadwal', 'sesiKuliah', 'absensiData'));
     }
 }

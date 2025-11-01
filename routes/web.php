@@ -63,6 +63,7 @@ Route::prefix('data')->middleware('auth')->group(function () {
         Route::get('/{id}/edit', [App\Http\Controllers\KelasController::class, 'edit'])->name('data.kelas.edit');
         Route::put('/{id}/update', [App\Http\Controllers\KelasController::class, 'update'])->name('data.kelas.update');
         Route::delete('/{id}/hapus', [App\Http\Controllers\KelasController::class, 'destroy'])->name('data.kelas.delete');
+        Route::get('/{kelasId}/jadwal/{jadwalId}/absensi', [App\Http\Controllers\KelasController::class, 'absensi'])->name('data.kelas.absensi');
         Route::delete('/kelas/{kelasId}/mahasiswa/{mahasiswaId}', [App\Http\Controllers\KelasController::class, 'keluarkan'])->name('data.kelas.keluarkan');
     });
     Route::prefix('mahasiswa')->group(function () {
