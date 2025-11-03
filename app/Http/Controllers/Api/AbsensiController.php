@@ -179,9 +179,18 @@ class AbsensiController extends Controller
                     ->whereHas('kelas.jadwal.sesiKuliah', function ($query) {
                         $query->where('status_absensi', 'buka');
                     })
-                    ->with(['kelas.jadwal.sesiKuliah' => function ($query) {
-                        $query->where('status_absensi', 'buka');
-                    }, 'kelas.jadwal', 'kelas', 'kelas.matakuliah', 'kelas.dosen', 'kelas.jadwal.sesiKuliah'])
+                    ->with([
+                        'kelas.matakuliah',
+                        'kelas.dosen',
+                        'kelas.jadwal' => function ($query) {
+                            $query->whereHas('sesiKuliah', function ($q) {
+                                $q->where('status_absensi', 'buka');
+                            });
+                        },
+                        'kelas.jadwal.sesiKuliah' => function ($query) {
+                            $query->where('status_absensi', 'buka');
+                        }
+                    ])
                     ->get();
 
             if ($sesi->isEmpty()) {

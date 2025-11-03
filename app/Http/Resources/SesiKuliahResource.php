@@ -30,8 +30,23 @@ class SesiKuliahResource extends JsonResource
             'message' => $this->message,
             'data' => $this->resource->map(function ($item) {
                 $matakuliah = $item->kelas->matakuliah->first();
-                $jadwal = $item->kelas->jadwal->first();
-                $sesiKuliah = $jadwal->sesiKuliah->first();
+
+                // Cari jadwal yang memiliki sesi kuliah aktif
+                $jadwal = $item->kelas->jadwal->filter(function ($j) {
+                    return $j->sesiKuliah->where('status_absensi', 'buka')->isNotEmpty();
+                })->first();
+
+                // Jika tidak ada jadwal dengan sesi aktif, skip item ini
+                if (!$jadwal) {
+                    return null;
+                }
+
+                $sesiKuliah = $jadwal->sesiKuliah->where('status_absensi', 'buka')->first();
+
+                // Jika tidak ada sesi kuliah aktif, skip item ini
+                if (!$sesiKuliah) {
+                    return null;
+                }
 
                 return [
                     'matakuliah' => [
@@ -62,7 +77,7 @@ class SesiKuliahResource extends JsonResource
                         ]
                     ]
                 ];
-            }),
+            })->filter(), // Filter untuk menghilangkan item null
         ];
     }
 }
