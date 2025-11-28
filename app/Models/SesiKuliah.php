@@ -16,6 +16,8 @@ class SesiKuliah extends Model
         'status_absensi',
         'waktu_buka',
         'waktu_tutup',
+        'latitude',
+        'longitude',
     ];
 
     public function jadwal() : BelongsTo

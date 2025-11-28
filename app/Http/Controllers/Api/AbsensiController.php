@@ -36,6 +36,8 @@ class AbsensiController extends Controller
     {
         $validasi = $request->validate([
             'jadwal_id' => 'required|exists:jadwal,id',
+            'longitude' => 'nullable|numeric',
+            'latitude' => 'nullable|numeric',
         ]);
 
         $date = Carbon::now()->toDateString();
@@ -56,6 +58,17 @@ class AbsensiController extends Controller
             $validasi['tanggal'] = $date;
             $validasi['status_absensi'] = 'buka';
             $validasi['waktu_buka'] = Carbon::now();
+
+            // cek jika latitude dan longitude tidak disediakan, ambil dari data ruangan kelas
+            if (empty($validasi['latitude']) || empty($validasi['longitude'])) {
+                $jadwal = Jadwal::where('id', $validasi['jadwal_id'])
+                    ->with('ruangan')
+                    ->first();
+                if ($jadwal && $jadwal->ruangan) {
+                    $validasi['latitude'] = $jadwal->ruangan->latitude;
+                    $validasi['longitude'] = $jadwal->ruangan->longitude;
+                }
+            }
 
             $data = SesiKuliah::create($validasi);
             DB::commit();

@@ -35,6 +35,8 @@ class SesiKuliahByIdResource extends JsonResource
                 'status_absensi' => $this->status_absensi,
                 'waktu_buka' => $this->waktu_buka,
                 'waktu_tutup' => $this->waktu_tutup,
+                'latitude' => $this->latitude,
+                'longitude' => $this->longitude,
                 'created_at' => $this->created_at,
                 'updated_at' => $this->updated_at,
             ],
