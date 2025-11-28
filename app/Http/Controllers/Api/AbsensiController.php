@@ -260,19 +260,11 @@ class AbsensiController extends Controller
         }
 
         // cek latitude dan longitude mahasiswa apakah sesuai dengan ruangan kelas dan memiliki jarak maksimal 5 meter
-        $ruangan = $sesi->jadwal->ruangan;
-        if (!$ruangan || !$ruangan->latitude || !$ruangan->longitude) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Data lokasi ruangan tidak tersedia.'
-            ], 400);
-        }
-
         $jarak = $this->hitungJarak(
             $validasi['latitude'],
             $validasi['longitude'],
-            $ruangan->latitude,
-            $ruangan->longitude
+            $sesi->latitude,
+            $sesi->longitude
         );
 
         if ($jarak > 5) {
