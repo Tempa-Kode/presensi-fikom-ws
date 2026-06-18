@@ -21,6 +21,7 @@ use App\Http\Resources\SesiKuliahByIdResource;
 use App\Http\Resources\AbsensiPertemuanResource;
 use App\Http\Resources\ValidasiPengajuanResource;
 use App\Http\Resources\PengajuanIzinSakitResource;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AbsensiController extends Controller
 {
@@ -712,5 +713,86 @@ class AbsensiController extends Controller
             ], 500);
         }
 
+    }
+
+    #[Group('Akses Dosen')]
+    /**
+     * Export Absensi Sesi ke PDF
+     *
+     * Dosen dapat mengunduh laporan absensi untuk sesi pertemuan tertentu dalam format PDF.
+     *
+     * @return Response.
+     */
+    public function exportAbsensiSesi($sesiId)
+    {
+        // 1. Fetch SesiKuliah with all required relationships
+        $sesi = SesiKuliah::with([
+            'jadwal.kelas.dosen',
+            'jadwal.kelas.prodi.kaprodi',
+            'jadwal.kelas.matakuliah',
+            'jadwal.kelas.tahunAkademik',
+            'jadwal.kelas.mahasiswa' => function ($q) {
+                $q->orderBy('npm', 'asc');
+            },
+            'jadwal.ruangan',
+            'jadwal.jam',
+            'absensi',
+            'pengajuanIzinSakit'
+        ])->where('id', $sesiId)->first();
+
+        if (!$sesi) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sesi kuliah tidak ditemukan.'
+            ], 404);
+        }
+
+        $jadwal = $sesi->jadwal;
+        $kelas = $jadwal->kelas;
+
+        // 2. Determine "Pertemuan Ke-" by ordering all sessions of this schedule
+        $allSesi = SesiKuliah::where('jadwal_id', $sesi->jadwal_id)
+            ->orderBy('tanggal', 'asc')
+            ->orderBy('id', 'asc')
+            ->pluck('id')
+            ->toArray();
+
+        $pertemuanKe = array_search($sesi->id, $allSesi) !== false ? array_search($sesi->id, $allSesi) + 1 : 1;
+
+        // 3. Map absensi & pengajuan status for easy retrieval in view
+        $absensiMap = $sesi->absensi->keyBy('mahasiswa_id');
+        $pengajuanMap = $sesi->pengajuanIzinSakit->keyBy('mahasiswa_id');
+
+        // 4. Calculate attendance statistics
+        $stats = [
+            'hadir' => 0,
+            'izin' => 0,
+            'sakit' => 0,
+            'alfa' => 0,
+            'belum_absen' => 0,
+            'total' => $kelas->mahasiswa->count(),
+        ];
+
+        foreach ($kelas->mahasiswa as $mahasiswa) {
+            $absensi = $absensiMap->get($mahasiswa->id);
+            if ($absensi) {
+                $status = $absensi->status;
+                if (isset($stats[$status])) {
+                    $stats[$status]++;
+                }
+            } else {
+                $stats['belum_absen']++;
+            }
+        }
+
+        // 5. Generate PDF using Barryvdh\DomPDF\Facade\Pdf
+        $pdf = Pdf::loadView('kelas.absensi-sesi-pdf', compact('sesi', 'jadwal', 'kelas', 'pertemuanKe', 'absensiMap', 'pengajuanMap', 'stats'));
+        $pdf->setPaper('A4', 'portrait');
+
+        // 6. Name and return/stream the PDF file
+        $namaKelas = preg_replace('/[^A-Za-z0-9_\-]/', '_', $kelas->nama_kelas);
+        $fileName = 'Laporan_Presensi_Pertemuan_' . $pertemuanKe . '_' . $namaKelas . '_' . date('YmdHis') . '.pdf';
+
+        return $pdf->stream($fileName);
     }
 }

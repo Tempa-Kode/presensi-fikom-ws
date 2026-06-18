@@ -28,6 +28,11 @@ Route::get(
     [App\Http\Controllers\Api\AbsensiController::class, 'daftarAbsensiBySesi']
 )->middleware('auth:sanctum');
 
+Route::get(
+    '/absensi/sesi/{sesiId}/export',
+    [App\Http\Controllers\Api\AbsensiController::class, 'exportAbsensiSesi']
+)->middleware('auth:sanctum');
+
 Route::put(
     '/absensi/sesi/{sesiId}/mahasiswa/{mahasiswaId}',
     [App\Http\Controllers\Api\AbsensiController::class, 'editStatusAbsensi']
