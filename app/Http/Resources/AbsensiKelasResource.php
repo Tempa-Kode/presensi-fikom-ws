@@ -61,6 +61,7 @@ class AbsensiKelasResource extends JsonResource
             'message' => $this->message,
             'data' => [
                 'jadwal_id' => $this->resource->id,
+                'kelas_id' => $kelas->id,
                 'nama_kelas' => $matakuliah->nama_matkul . ' - ' . $kelas->nama_kelas,
                 'hari' => $this->resource->hari,
                 'jam' => [
