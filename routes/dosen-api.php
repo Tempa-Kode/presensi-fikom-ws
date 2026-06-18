@@ -8,6 +8,11 @@ Route::get(
     [App\Http\Controllers\Api\KelasController::class, 'kelasByDosen']
 )->middleware('auth:sanctum');
 
+Route::get(
+    '/kelas/{kelasId}/jadwal/{jadwalId}/absensi-pdf',
+    [App\Http\Controllers\KelasController::class, 'cetakAbsensiPDF']
+)->middleware('auth:sanctum');
+
 Route::post(
     '/sesi-absensi/buat',
     [App\Http\Controllers\Api\AbsensiController::class, 'buatSesiAbsensi']

@@ -13,6 +13,7 @@ use App\Models\TahunAkademik;
 use App\Models\MatakuliahKelas;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Dedoc\Scramble\Attributes\Group;
 
 class KelasController extends Controller
 {
@@ -227,8 +228,13 @@ class KelasController extends Controller
         return view('kelas.absensi', compact('kelas', 'jadwal', 'sesiKuliah', 'absensiData'));
     }
 
+    #[Group('Akses Dosen')]
     /**
-     * Generate PDF untuk daftar hadir
+     * Export Absensi Kelas (16 Pertemuan)
+     *
+     * Dosen dapat mengunduh laporan absensi untuk sesi pertemuan tertentu dalam format PDF.
+     *
+     * @return response()
      */
     public function cetakAbsensiPDF($kelasId, $jadwalId)
     {
