@@ -34,9 +34,9 @@
                                         class="text-danger">*</span></label>
                                 <div class="col-sm-10">
                                     <select class="js-example-basic-single form-control" name="tahun_akademik_id">
-                                        <option value="" disabled selected>Pilih Tahun Akademik</option>
+                                        <option value="" disabled {{ old('tahun_akademik_id') === null && $activeTahunAkademikId === null ? 'selected' : '' }}>Pilih Tahun Akademik</option>
                                         @foreach ($tahunAkademik as $item)
-                                            <option value="{{ $item->id }}" {{ $item->id == old("tahun_akademik_id") ? "selected" : "" }}>{{ $item->nama_tahun }}</option>
+                                            <option value="{{ $item->id }}" {{ $item->id == old('tahun_akademik_id', $activeTahunAkademikId) ? 'selected' : '' }}>{{ $item->nama_tahun }}</option>
                                         @endforeach
                                     </select>
                                 </div>

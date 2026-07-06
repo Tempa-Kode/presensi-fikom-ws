@@ -44,10 +44,12 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label for="filter-tahun-akademik" class="form-label">Filter Tahun Akademik:</label>
-                                    <select id="filter-tahun-akademik" class="form-control">
-                                        <option value="">Semua Tahun Akademik</option>
+                                    <select id="filter-tahun-akademik" class="form-control" name="tahun_akademik_id">
+                                        <option value="all" {{ $selectedTahunAkademikId === 'all' ? 'selected' : '' }}>Semua Tahun Akademik</option>
                                         @foreach ($tahunAkademik as $item)
-                                            <option value="{{ $item->id }}">{{ $item->nama_tahun }}</option>
+                                            <option value="{{ $item->id }}" {{ (string) $selectedTahunAkademikId === (string) $item->id ? 'selected' : '' }}>
+                                                {{ $item->nama_tahun }}{{ (string) $activeTahunAkademikId === (string) $item->id ? ' (Aktif)' : '' }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -145,7 +147,7 @@
                 }
 
                 // Filter tahun akademik
-                if (tahunAkademikFilter !== '' && tahunAkademik !== tahunAkademikFilter) {
+                if (tahunAkademikFilter !== '' && tahunAkademikFilter !== 'all' && tahunAkademik !== tahunAkademikFilter) {
                     showRow = false;
                 }
 
@@ -174,6 +176,10 @@
         // Event listeners untuk semua filter
         document.getElementById('filter-semester').addEventListener('change', filterTable);
         document.getElementById('filter-prodi').addEventListener('change', filterTable);
-        document.getElementById('filter-tahun-akademik').addEventListener('change', filterTable);
+        document.getElementById('filter-tahun-akademik').addEventListener('change', function () {
+            const url = new URL(window.location.href);
+            url.searchParams.set('tahun_akademik_id', this.value);
+            window.location.href = url.toString();
+        });
     </script>
 @endsection

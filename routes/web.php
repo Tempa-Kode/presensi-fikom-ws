@@ -83,4 +83,8 @@ Route::prefix('data')->middleware('auth')->group(function () {
         Route::put('/{id}/update', [App\Http\Controllers\JadwalController::class, 'update'])->name('data.jadwal.update');
         Route::delete('/{id}/hapus', [App\Http\Controllers\JadwalController::class, 'destroy'])->name('data.jadwal.delete');
     });
+    Route::prefix('pengaturan')->group(function () {
+        Route::get('/', [App\Http\Controllers\PengaturanController::class, 'index'])->name('data.pengaturan');
+        Route::put('/tahun-akademik', [App\Http\Controllers\PengaturanController::class, 'updateTahunAkademik'])->name('data.pengaturan.tahun_akademik.update');
+    });
 })->name('data.');

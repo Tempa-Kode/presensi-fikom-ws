@@ -7,6 +7,7 @@ use App\Models\Kelas;
 use App\Models\Jadwal;
 use App\Models\Prodi;
 use App\Models\Matakuliah;
+use App\Models\Setting;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\TahunAkademik;
@@ -20,9 +21,16 @@ class KelasController extends Controller
     /**
      * Menampilkan seluruh daftar kelas
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Kelas::with('dosen', 'prodi', 'matakuliah', 'tahunAkademik')->latest()->get();
+        $activeTahunAkademikId = Setting::activeTahunAkademikId();
+        $selectedTahunAkademikId = $request->query('tahun_akademik_id', $activeTahunAkademikId ?: 'all');
+        $data = Kelas::with('dosen', 'prodi', 'matakuliah', 'tahunAkademik')
+            ->when($selectedTahunAkademikId !== 'all', function ($query) use ($selectedTahunAkademikId) {
+                $query->where('tahun_akademik_id', $selectedTahunAkademikId);
+            })
+            ->latest()
+            ->get();
 
         $semester = $data->flatMap(function($item) {
             if($item->matakuliah && $item->matakuliah->count() > 0) {
@@ -34,7 +42,7 @@ class KelasController extends Controller
         $prodi = Prodi::all();
         $tahunAkademik = TahunAkademik::all();
 
-        return view('kelas.index', compact('data', 'semester', 'prodi', 'tahunAkademik'));
+        return view('kelas.index', compact('data', 'semester', 'prodi', 'tahunAkademik', 'activeTahunAkademikId', 'selectedTahunAkademikId'));
     }
 
     /**
@@ -46,11 +54,13 @@ class KelasController extends Controller
         $matkul = Matakuliah::all();
         $dosen = User::where('role', 'dosen')->get();
         $tahunAkademik = TahunAkademik::all();
+        $activeTahunAkademikId = Setting::activeTahunAkademikId();
         return view('kelas.create', compact(
             'prodi',
             'matkul',
             'dosen',
-            'tahunAkademik'
+            'tahunAkademik',
+            'activeTahunAkademikId'
         ));
     }
 
@@ -59,8 +69,12 @@ class KelasController extends Controller
      */
     public function store(Request $request)
     {
+        if (!$request->filled('tahun_akademik_id') && Setting::activeTahunAkademikId()) {
+            $request->merge(['tahun_akademik_id' => Setting::activeTahunAkademikId()]);
+        }
+
         $validasi = $request->validate([
-            'tahun_akademik_id' => 'required',
+            'tahun_akademik_id' => 'required|exists:tahun_akademik,id',
             'prodi_id' => 'required',
             'matkul_id' => 'required',
             'dosen_id' => 'required',

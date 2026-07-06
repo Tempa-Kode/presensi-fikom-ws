@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use App\Models\Kelas;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
@@ -32,9 +33,13 @@ class KelasController extends Controller
     public function kelasByDosen($nidn)
     {
         try{
+            $activeId = Setting::activeTahunAkademikId();
+
             // Ambil jadwal berdasarkan kelas yang diampu dosen
             $jadwalData = Jadwal::whereHas('kelas.dosen', function ($query) use ($nidn) {
                 $query->where('nidn', $nidn);
+            })->when($activeId, function ($q) use ($activeId) {
+                $q->whereHas('kelas', fn($q2) => $q2->where('tahun_akademik_id', $activeId));
             })->with([
                 'kelas.dosen',
                 'kelas.matakuliah',
@@ -162,10 +167,13 @@ class KelasController extends Controller
     {
         try {
             $mahasiswa = $request->user();
+            $activeId = Setting::activeTahunAkademikId();
 
             // Ambil jadwal berdasarkan kelas yang diambil mahasiswa
             $jadwalData = Jadwal::whereHas('kelas.mahasiswa', function ($query) use ($mahasiswa) {
                 $query->where('mahasiswa_id', $mahasiswa->id);
+            })->when($activeId, function ($q) use ($activeId) {
+                $q->whereHas('kelas', fn($q2) => $q2->where('tahun_akademik_id', $activeId));
             })->with([
                 'kelas.dosen',
                 'kelas.matakuliah',
@@ -232,9 +240,13 @@ class KelasController extends Controller
     {
         try {
             $mahasiswa = $request->user();
+            $activeId = Setting::activeTahunAkademikId();
+
             // Ambil jadwal berdasarkan kelas yang diambil mahasiswa
             $jadwalData = Jadwal::whereHas('kelas.mahasiswa', function ($query) use ($mahasiswa) {
                 $query->where('mahasiswa_id', $mahasiswa->id);
+            })->when($activeId, function ($q) use ($activeId) {
+                $q->whereHas('kelas', fn($q2) => $q2->where('tahun_akademik_id', $activeId));
             })->with([
                 'kelas.dosen',
                 'kelas.matakuliah',

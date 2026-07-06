@@ -162,6 +162,11 @@
                                         class="nav-link {{ Route::currentRouteName() == "data.jam" ? "text-primary" : "" }}"><i
                                             class="fe fe-box"></i> Data Jam</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ route("data.pengaturan" )}}"
+                                        class="nav-link {{ Route::currentRouteName() == "data.pengaturan" ? "text-primary" : "" }}"><i
+                                            class="fe fe-settings"></i> Pengaturan</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
