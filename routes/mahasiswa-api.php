@@ -9,6 +9,16 @@ Route::post(
 )->middleware('auth:sanctum');
 
 Route::get(
+    '/kelas/tersedia',
+    [App\Http\Controllers\Api\KelasController::class, 'kelasTersedia']
+)->middleware('auth:sanctum');
+
+Route::post(
+    '/kelas/{kelasId}/daftar',
+    [App\Http\Controllers\Api\KelasController::class, 'daftarKelasById']
+)->middleware('auth:sanctum');
+
+Route::get(
     '/kelas/mahasiswa/',
     [App\Http\Controllers\Api\KelasController::class, 'kelasByMahasiswa']
 )->middleware('auth:sanctum');

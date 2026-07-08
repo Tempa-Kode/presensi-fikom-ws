@@ -156,6 +156,101 @@ class KelasController extends Controller
     }
 
     #[Group('Akses Mahasiswa')]
+    public function kelasTersedia(Request $request)
+    {
+        try {
+            $mahasiswa = $request->user();
+            $activeId = Setting::activeTahunAkademikId();
+
+            if (!$activeId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tahun Akademik aktif belum diatur.',
+                ], 422);
+            }
+
+            $kelasTerdaftar = KelasMatakuliahMahasiswa::where('mahasiswa_id', $mahasiswa->id)
+                ->pluck('kelas_id')
+                ->toArray();
+
+            $kelas = Kelas::where('tahun_akademik_id', $activeId)
+                ->with(['matakuliah', 'dosen', 'prodi', 'tahunAkademik', 'jadwal.ruangan', 'jadwal.jam'])
+                ->latest()
+                ->get();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Daftar kelas tahun akademik aktif',
+                'data' => $kelas->map(fn($item) => $this->formatKelasTersedia($item, $kelasTerdaftar))->values(),
+                'meta' => [
+                    'total' => $kelas->count(),
+                    'tahun_akademik_aktif_id' => $activeId,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    #[Group('Akses Mahasiswa')]
+    public function daftarKelasById(Request $request, $kelasId)
+    {
+        try {
+            $mahasiswa = $request->user();
+            $activeId = Setting::activeTahunAkademikId();
+
+            if (!$activeId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tahun Akademik aktif belum diatur.',
+                ], 422);
+            }
+
+            $kelas = Kelas::where('id', $kelasId)
+                ->where('tahun_akademik_id', $activeId)
+                ->with(['matakuliah', 'dosen', 'prodi', 'tahunAkademik', 'jadwal.ruangan', 'jadwal.jam'])
+                ->first();
+
+            if (!$kelas) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Kelas tidak ditemukan pada Tahun Akademik aktif.',
+                ], 404);
+            }
+
+            $existingEnrollment = KelasMatakuliahMahasiswa::where('kelas_id', $kelas->id)
+                ->where('mahasiswa_id', $mahasiswa->id)
+                ->first();
+
+            if ($existingEnrollment) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Anda sudah terdaftar di kelas ini.',
+                ], 400);
+            }
+
+            KelasMatakuliahMahasiswa::create([
+                'kelas_id' => $kelas->id,
+                'mahasiswa_id' => $mahasiswa->id,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil mendaftar ke kelas.',
+                'data' => $this->formatKelasTersedia($kelas, [$kelas->id]),
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    #[Group('Akses Mahasiswa')]
     /**
      * Menampilkan daftar kelas yang diambil/didaftarkan.
      *
@@ -270,5 +365,57 @@ class KelasController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function formatKelasTersedia(Kelas $kelas, array $kelasTerdaftar): array
+    {
+        $matakuliah = $kelas->matakuliah->first();
+
+        return [
+            'id' => $kelas->id,
+            'nama_kelas' => $matakuliah
+                ? $matakuliah->nama_matkul . ' - ' . $kelas->nama_kelas
+                : $kelas->nama_kelas,
+            'sudah_terdaftar' => in_array($kelas->id, $kelasTerdaftar),
+            'prodi' => [
+                'id' => $kelas->prodi->id,
+                'nama_prodi' => $kelas->prodi->nama_prodi,
+            ],
+            'dosen' => [
+                'id' => $kelas->dosen->id,
+                'nidn' => $kelas->dosen->nidn,
+                'nama' => $kelas->dosen->nama,
+            ],
+            'matakuliah' => $kelas->matakuliah->map(function ($mk) {
+                return [
+                    'id' => $mk->id,
+                    'kode_matkul' => $mk->kode_matkul,
+                    'nama_matkul' => $mk->nama_matkul,
+                    'sks' => $mk->sks,
+                    'semester' => $mk->semester,
+                ];
+            })->values(),
+            'tahun_akademik' => $kelas->tahunAkademik ? [
+                'id' => $kelas->tahunAkademik->id,
+                'nama_tahun' => $kelas->tahunAkademik->nama_tahun,
+            ] : null,
+            'jadwal' => $kelas->jadwal->map(function ($jadwal) {
+                return [
+                    'id' => $jadwal->id,
+                    'hari' => $jadwal->hari,
+                    'tipe_pertemuan' => $jadwal->tipe_pertemuan,
+                    'ruangan' => $jadwal->ruangan ? [
+                        'id' => $jadwal->ruangan->id,
+                        'nama_ruangan' => 'Ruang ' . $jadwal->ruangan->nama_ruang,
+                    ] : null,
+                    'jam' => $jadwal->jam ? [
+                        'id' => $jadwal->jam->id,
+                        'kode_jam' => $jadwal->jam->kode_jam,
+                        'jam_mulai' => $jadwal->jam->jam_mulai,
+                        'jam_selesai' => $jadwal->jam->jam_selesai,
+                    ] : null,
+                ];
+            })->values(),
+        ];
     }
 }
