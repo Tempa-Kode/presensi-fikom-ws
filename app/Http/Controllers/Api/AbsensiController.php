@@ -6,6 +6,7 @@ use App\Models\Kelas;
 use App\Models\Jadwal;
 use App\Models\Absensi;
 use App\Models\SesiKuliah;
+use App\Models\AbsensiOtpAttempt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\PengajuanIzinSakit;
@@ -59,6 +60,7 @@ class AbsensiController extends Controller
             $validasi['tanggal'] = $date;
             $validasi['status_absensi'] = 'buka';
             $validasi['waktu_buka'] = Carbon::now();
+            $validasi['otp_code'] = str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
 
             // cek jika latitude dan longitude tidak disediakan, ambil dari data ruangan kelas
             if (empty($validasi['latitude']) || empty($validasi['longitude'])) {
@@ -242,6 +244,7 @@ class AbsensiController extends Controller
     {
         $validasi = $request->validate([
             'sesi_kuliah_id' => 'required|exists:sesi_kuliah,id',
+            'otp_code' => 'required|digits:4',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
@@ -253,11 +256,41 @@ class AbsensiController extends Controller
             ->where('status_absensi', 'buka')
             ->first();
 
-         if (!$sesi) {
+        if (!$sesi) {
             return response()->json([
                 'status' => false,
                 'message' => 'Sesi absensi sudah ditutup.'
             ], 404);
+        }
+
+        // Cek/siapkan record attempt tracking untuk mahasiswa ini pada sesi ini
+        $attempt = AbsensiOtpAttempt::firstOrCreate(
+            ['sesi_kuliah_id' => $sesi->id, 'mahasiswa_id' => $mahasiswa->id],
+            ['failed_count' => 0]
+        );
+
+        // Cek apakah sedang lockout
+        if ($attempt->locked_until && Carbon::now()->lt($attempt->locked_until)) {
+            $sisaDetik = Carbon::now()->diffInSeconds($attempt->locked_until);
+            return response()->json([
+                'status' => false,
+                'message' => 'Terlalu banyak percobaan salah. Coba lagi dalam ' . ceil($sisaDetik / 60) . ' menit.'
+            ], 429);
+        }
+
+        // Validasi OTP
+        if ($validasi['otp_code'] !== $sesi->otp_code) {
+            $attempt->failed_count += 1;
+            if ($attempt->failed_count >= 3) {
+                $attempt->locked_until = Carbon::now()->addMinutes(5);
+                $attempt->failed_count = 0;
+            }
+            $attempt->save();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Kode OTP salah.'
+            ], 422);
         }
 
         // cek latitude dan longitude mahasiswa apakah sesuai dengan ruangan kelas dan memiliki jarak maksimal 5 meter
@@ -310,6 +343,8 @@ class AbsensiController extends Controller
                 'latitude' => $validasi['latitude'] ?? null,
                 'longitude' => $validasi['longitude'] ?? null,
             ]);
+
+            $attempt->delete();
 
             DB::commit();
 

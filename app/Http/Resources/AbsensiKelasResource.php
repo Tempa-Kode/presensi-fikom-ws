@@ -46,6 +46,7 @@ class AbsensiKelasResource extends JsonResource
                     'tanggal' => $sesi->tanggal,
                     'tanggal_formatted' => $tanggalFormatted,
                     'status_absensi' => $sesi->status_absensi,
+                    'otp_code' => $sesi->otp_code,
                     'waktu_buka' => $sesi->waktu_buka,
                     'waktu_tutup' => $sesi->waktu_tutup,
                     'jumlah_hadir' => $sesi->absensi->where('status', 'hadir')->count(),

@@ -18,6 +18,7 @@ class SesiKuliah extends Model
         'waktu_tutup',
         'latitude',
         'longitude',
+        'otp_code',
     ];
 
     public function jadwal() : BelongsTo
@@ -33,5 +34,10 @@ class SesiKuliah extends Model
     public function pengajuanIzinSakit() : HasMany
     {
         return $this->hasMany(PengajuanIzinSakit::class);
+    }
+
+    public function otpAttempts() : HasMany
+    {
+        return $this->hasMany(AbsensiOtpAttempt::class);
     }
 }

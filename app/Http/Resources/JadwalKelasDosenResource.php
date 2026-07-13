@@ -31,6 +31,9 @@ class JadwalKelasDosenResource extends JsonResource
                 $kelas = $jadwal->kelas;
                 $matakuliah = $kelas->matakuliah->first();
 
+                // Gunakan collection filter, bukan query, agar pakai eager-loaded data
+                $sesiAktif = $jadwal->sesiKuliah->firstWhere('status_absensi', 'buka');
+
                 return [
                     'jadwal_id' => $jadwal->id,
                     'hari' => $jadwal->hari,
@@ -45,6 +48,8 @@ class JadwalKelasDosenResource extends JsonResource
                         'nama_ruangan' => "Ruang {$jadwal->ruangan->nama_ruang}",
                     ] : null,
                     'tipe_pertemuan' => $jadwal->tipe_pertemuan,
+                    'otp_code' => $sesiAktif ? $sesiAktif->otp_code : null,
+                    'status_absensi' => $sesiAktif ? $sesiAktif->status_absensi : null,
                     'kelas' => [
                         'id' => $kelas->id,
                         'nama_kelas' => $matakuliah
