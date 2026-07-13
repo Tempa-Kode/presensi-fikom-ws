@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -56,6 +57,16 @@ class User extends Authenticatable
     public function prodi() : BelongsTo
     {
         return $this->belongsTo(Prodi::class);
+    }
+
+    public function prodiDiketuai() : HasOne
+    {
+        return $this->hasOne(Prodi::class, 'kaprodi_id');
+    }
+
+    public function isKaprodi() : bool
+    {
+        return $this->prodiDiketuai()->exists();
     }
 
     public function kelas() : HasMany

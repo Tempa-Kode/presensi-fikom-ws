@@ -52,3 +52,8 @@ Route::put(
     '/pengajuan-izin-sakit/{pengajuanId}/validasi',
     [App\Http\Controllers\Api\AbsensiController::class, 'validasiPengajuanIzinSakit']
 )->middleware('auth:sanctum');
+
+Route::get(
+    '/kaprodi/kelas',
+    [App\Http\Controllers\Api\KaprodiController::class, 'daftarKelas']
+)->middleware('auth:sanctum');

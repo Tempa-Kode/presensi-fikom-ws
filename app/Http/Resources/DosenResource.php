@@ -25,6 +25,8 @@ class DosenResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $prodiDiketuai = $this->resource->prodiDiketuai;
+
         return [
             'status' => $this->status,
             'message' => $this->message,
@@ -35,6 +37,11 @@ class DosenResource extends JsonResource
                 'nama' => $this->nama,
                 'role' => $this->role,
                 'foto' => $this->foto ? url($this->foto) : null,
+                'is_kaprodi' => $prodiDiketuai !== null,
+                'prodi_diketuai' => $prodiDiketuai ? [
+                    'id' => $prodiDiketuai->id,
+                    'nama_prodi' => $prodiDiketuai->nama_prodi,
+                ] : null,
             ]
         ];
     }
